@@ -1,8 +1,35 @@
+/* global __initial_auth_token */
 import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, getDocs, updateDoc as updateDocFirestore } from 'firebase/firestore';
 import {
+
+
+// Cloudinary image upload function (placed before usage so ESLint sees it)
+const uploadImageToCloudinary = async (imageFile) => {
+  if (!imageFile) return null;
+  const formData = new FormData();
+  formData.append('file', imageFile);
+  formData.append('upload_preset', cloudinaryUploadPreset);
+  try {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await response.json();
+    if (data && data.secure_url) {
+      return data.secure_url;
+    } else {
+      console.error("Cloudinary upload failed:", data);
+      return null;
+    }
+  } catch (e) {
+    console.error("Error uploading to Cloudinary:", e);
+    return null;
+  }
+};
+
   AlertCircle,
   BarChart,
   Clipboard,
@@ -32,14 +59,27 @@ const script2 = document.createElement('script');
 script2.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
 document.head.appendChild(script2);
 
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBL0hWDfSRuILLHSTxsbqlWnT3EwNzIEcs",
+  authDomain: "cylinder-app-28a3d.firebaseapp.com",
+  projectId: "cylinder-app-28a3d",
+  storageBucket: "cylinder-app-28a3d.appspot.com",
+  messagingSenderId: "52349586303",
+  appId: "1:52349586303:web:6e3b5f111f92e7930c284a"
+};
+
+// Initialize Firebase services and get instances
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
 // Main App component
 const App = () => {
   // Constant for currency symbol for easy global changes
   const CURRENCY_SYMBOL = '₹';
   
   // State variables for Firebase services and data
-  const [db, setDb] = useState(null);
-  const [auth, setAuth] = useState(null);
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [cylinders, setCylinders] = useState([]);
@@ -63,25 +103,18 @@ const App = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Global variables from the Canvas environment, with fallbacks for local development
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+  const appId = "cylinder-app-28a3d";
+  const initialAuthToken = (typeof window !== 'undefined' && typeof window.__initial_auth_token !== 'undefined') ? window.__initial_auth_token : null;
   
   // Cloudinary configuration
   const cloudinaryCloudName = "dhruvsb";
   const cloudinaryUploadPreset = "CYLINDER-APP";
-
+  
   // 1. Initialize Firebase and listen for auth state changes
   useEffect(() => {
     try {
-      const app = initializeApp(firebaseConfig);
-      const dbInstance = getFirestore(app);
-      const authInstance = getAuth(app);
-      setDb(dbInstance);
-      setAuth(authInstance);
-
       // Set up authentication state listener
-      onAuthStateChanged(authInstance, (user) => {
+      onAuthStateChanged(auth, (user) => {
         if (user) {
           setUser(user);
         } else {
@@ -92,10 +125,14 @@ const App = () => {
 
       // Sign in with custom token if available (for Canvas environment)
       if (initialAuthToken) {
-        signInWithCustomToken(authInstance, initialAuthToken).catch(console.error);
+        signInWithCustomToken(auth, initialAuthToken).catch(e => {
+            console.error("Custom token sign-in failed:", e);
+            // Fallback to anonymous sign-in if custom token fails
+            signInAnonymously(auth).catch(console.error);
+        });
       } else {
         // Sign in anonymously for local testing or when no custom token is available
-        signInAnonymously(authInstance).catch(console.error);
+        signInAnonymously(auth).catch(console.error);
       }
     } catch (e) {
       console.error("Firebase initialization error:", e);
@@ -104,7 +141,7 @@ const App = () => {
   }, []);
 
   // Get the current user's ID or a fallback
-  const userId = user?.uid || (auth?.currentUser?.uid || 'anonymous');
+  const userId = user?.uid || 'anonymous';
 
   // 2. Fetch data from Firestore once authenticated
   useEffect(() => {
@@ -215,8 +252,8 @@ const App = () => {
   };
   
   // Deletion helper function for subcollections
-  const deleteCollection = async (dbInstance, collectionPath) => {
-    const querySnapshot = await getDocs(collection(dbInstance, collectionPath));
+  const deleteCollection = async (collectionPath) => {
+    const querySnapshot = await getDocs(collection(db, collectionPath));
     const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
     return Promise.all(deletePromises);
   };
@@ -229,61 +266,37 @@ const App = () => {
       return;
     }
     
-    html2canvas(input, { scale: 3 }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; 
-      const pageHeight = 295;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+    // Dynamically import html2canvas and jspdf
+    if (typeof window.html2canvas !== 'undefined' && typeof window.jspdf !== 'undefined') {
+        window.html2canvas(input, { scale: 3 }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210; 
+            const pageHeight = 295;
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      pdf.save(filename);
-    }).catch(err => {
-      console.error("PDF export failed:", err);
-      setError("Failed to export to PDF. Please try again.");
-    });
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            pdf.save(filename);
+        }).catch(err => {
+            console.error("PDF export failed:", err);
+            setError("Failed to export to PDF. Please try again.");
+        });
+    } else {
+        setError("PDF export failed: html2canvas or jspdf library not loaded.");
+    }
   };
 
   // Cloudinary image upload function
-  const uploadImageToCloudinary = async (imageFile) => {
-    if (!imageFile) {
-        return null;
-    }
-
-    const formData = new FormData();
-    formData.append('file', imageFile);
-    formData.append('upload_preset', cloudinaryUploadPreset);
-
-    try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        const data = await response.json();
-        if (data && data.secure_url) {
-            return data.secure_url;
-        } else {
-            console.error("Cloudinary upload failed:", data);
-            return null;
-        }
-    } catch (e) {
-        console.error("Error uploading to Cloudinary:", e);
-        return null;
-    }
-  };
-
-
   // Handlers for data
   const handleAddCylinder = async (newCylinderData) => {
     if (!db || isProcessing) return;
@@ -469,7 +482,7 @@ const App = () => {
     if (!db) return;
     try {
       setLoading(true);
-      await deleteCollection(db, `artifacts/${appId}/users/${userId}/cylinders/${cylinderId}/payments`);
+      await deleteCollection(`artifacts/${appId}/users/${userId}/cylinders/${cylinderId}/payments`);
       await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/cylinders`, cylinderId));
       console.log(`Cylinder ${cylinderId} and its payments deleted successfully.`);
       setLoading(false);
@@ -638,7 +651,7 @@ const App = () => {
                       <span className="font-medium text-red-900">{c.name} ({getCustomerName(c.customerId)})</span>
                       <span className="font-bold text-red-700">{CURRENCY_SYMBOL}{parseFloat(c.balance).toFixed(2)} Due</span>
                       <button 
-                          onClick={(e) => { e.stopPropagation(); generateReminderMessage(c); }}
+                          onClick={(e) => { e.stopPropagation(); generateReminderMessage(cylinder); }}
                           className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-full text-sm font-semibold transition-colors duration-200"
                       >
                           Remind
@@ -693,7 +706,7 @@ const App = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Cylinder</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -881,7 +894,7 @@ const App = () => {
                       <p className="text-xs text-gray-500">Due since: {c.cylinderDate ? new Date(c.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p>
                     </div>
                     <button
-                      onClick={() => generateReminderMessage(c)}
+                      onClick={() => generateReminderMessage(cylinder)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
                     >
                       <FileText className="inline-block mr-2" /> Generate Message
@@ -1971,7 +1984,7 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
                     placeholder="Search cylinders..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
                 <button
