@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, updateDoc as updateDocFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, updateDoc as updateDocFirestore, serverTimestamp } from 'firebase/firestore';
 import {
   AlertCircle,
   BarChart,
@@ -74,6 +74,13 @@ const uploadImageToCloudinary = async (imageFile) => {
         console.error("Error uploading to Cloudinary:", e);
         return null;
     }
+};
+
+// Helper function to calculate outstanding balance
+const calculateBalance = (cylinder) => {
+  const amountFromCustomer = parseFloat(cylinder.amountFromCustomer);
+  const amountPaid = parseFloat(cylinder.amountPaid) || 0;
+  return (amountFromCustomer - amountPaid).toFixed(2);
 };
 
 // Main App component
@@ -809,7 +816,7 @@ const App = () => {
                                                   })}
                                                   className="text-red-600 hover:text-red-900 transition-colors duration-200 ml-2"
                                               >
-                                                  <Trash2 size={16} />
+                                                  Trash2 size={16} />
                                               </button>
                                           </td>
                                       </tr>
@@ -1291,7 +1298,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="totalCylinderValue" className="block text-sm font-medium text-gray-700">Total Cylinder Value ({currencySymbol})</label>
+              <label htmlFor="totalCylinderValue" className="block text-sm font-medium text-gray-700">Total Cylinder Value ({CURRENCY_SYMBOL})</label>
               <input
                 id="totalCylinderValue"
                 type="number"
