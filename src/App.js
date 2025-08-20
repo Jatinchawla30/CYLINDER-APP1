@@ -553,18 +553,18 @@ const App = () => {
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <BarChart className="text-blue-500 mb-2" size={48} />
               <p className="text-lg font-semibold">Total Cylinders</p>
-              <h3 className="text-3xl font-bold text-gray-800">{totalCylinders}</h3>
-            </div>
+              <h3 className="text-3xl font-bold text-gray-800">{totalCylinders}
+            
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <DollarSign className="text-green-500 mb-2" size={48} />
-              <p className="text-lg font-semibold">Total Outstanding</h3>
+              <p className="text-lg font-semibold">Total Outstanding</p>
               <h3 className="text-3xl font-bold text-gray-800">{CURRENCY_SYMBOL}{totalOutstandingBalance.toFixed(2)}</h3>
-            </div>
+            
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <AlertCircle className="text-red-500 mb-2" size={48} />
-              <p className="text-lg font-semibold">Overdue Payments</h3>
+              <p className="text-lg font-semibold">Overdue Payments</p>
               <h3 className="text-3xl font-bold text-gray-800">{overdueCylinders.length}</h3>
-            </div>
+            
             <div className="md:col-span-2 lg:col-span-3">
               <h4 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -598,7 +598,7 @@ const App = () => {
             {overdueCylinders.length > 0 && (
               <div className="md:col-span-2 lg:col-span-3 mt-8 bg-red-100 border-l-4 border-red-500 p-4 rounded-xl shadow-inner">
                 <h4 className="text-xl font-bold text-red-800 mb-2">Overdue Cylinders</h4>
-                <p className="text-sm text-red-700 mb-4">You have {overdueCylinders.length} payments that are overdue. Please visit the reminders page to follow up.</h3>
+                <p className="text-sm text-red-700 mb-4">You have {overdueCylinders.length} payments that are overdue. Please visit the reminders page to follow up.</p>
                 <ul className="space-y-2">
                   {overdueCylinders.map(c => (
                     <li key={c.id} className="flex justify-between items-center bg-red-50 p-3 rounded-lg shadow-sm">
@@ -613,7 +613,7 @@ const App = () => {
                     </li>
                   ))}
                 </ul>
-              </div>
+              
             )}
           </div>
         );
@@ -648,7 +648,7 @@ const App = () => {
               </div>
             </div>
             {filteredCylinders.length === 0 ? (
-              <p className="text-center text-gray-500">No cylinders found.</h3>
+              <p className="text-center text-gray-500">No cylinders found.</p>
             ) : (
               <div id="cylinders-table" className="overflow-x-auto bg-white rounded-xl shadow-lg">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -702,7 +702,7 @@ const App = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              
             )}
           </div>
         );
@@ -725,7 +725,7 @@ const App = () => {
               </button>
             </div>
             {customers.length === 0 ? (
-              <p className="text-center text-gray-500">No customers found.</h2>
+              <p className="text-center text-gray-500">No customers found.</p>
             ) : (
               <div id="customers-table" className="overflow-x-auto bg-white rounded-xl shadow-lg">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -769,7 +769,7 @@ const App = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              
             )}
           </div>
         );
@@ -786,7 +786,7 @@ const App = () => {
                       </button>
                   </div>
                   {suppliers.length === 0 ? (
-                      <p className="text-center text-gray-500">No suppliers found.</h2>
+                      <p className="text-center text-gray-500">No suppliers found.</p>
                   ) : (
                       <div id="suppliers-table" className="overflow-x-auto bg-white rounded-xl shadow-lg">
                           <table className="min-w-full divide-y divide-gray-200">
@@ -824,7 +824,7 @@ const App = () => {
                                   ))}
                               </tbody>
                           </table>
-                      </div>
+                      
                   )}
               </div>
           );
@@ -834,19 +834,19 @@ const App = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Reminders</h2>
             {overdueCylinders.length === 0 ? (
               <div className="bg-green-100 border-l-4 border-green-500 p-4 rounded-xl">
-                <p className="font-bold text-green-800">No Overdue Payments!</h2>
-                <p className="text-sm text-green-700 mt-1">All good. Keep up the great work!</h3>
-              </div>
+                <p className="font-bold text-green-800">No Overdue Payments!</p>
+                <p className="text-sm text-green-700 mt-1">All good. Keep up the great work!</p>
+              
             ) : (
               <div className="space-y-4">
                 {overdueCylinders.map((c) => (
                   <div key={c.id} className="bg-white p-4 rounded-xl shadow-lg flex justify-between items-center">
                     <div>
-                      <p className="text-lg font-bold text-gray-800">{c.name}</h3>
-                      <p className="text-sm text-gray-600">Customer: {getCustomerName(c.customerId)}</h3>
+                      <p className="text-lg font-bold text-gray-800">{c.name}</p>
+                      <p className="text-sm text-gray-600">Customer: {getCustomerName(c.customerId)}</p>
                       <p className="text-sm text-red-500 font-bold mt-1">Balance Due: {CURRENCY_SYMBOL}{parseFloat(c.balance).toFixed(2)}</p>
                       <p className="text-xs text-gray-500">Due since: {c.cylinderDate ? new Date(c.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p>
-                    </div>
+                    
                     <button
                       onClick={() => generateReminderMessage(c)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
@@ -889,7 +889,7 @@ const App = () => {
   return (
     <div className="min-h-screen h-screen overflow-hidden bg-gray-100 font-sans flex flex-col md:flex-row">
       <aside className="bg-gray-800 text-white w-full md:w-64 p-6 flex flex-col md:h-screen overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-8 text-center text-blue-400">Cylinder Tracker</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center text-blue-400">Cylinder Tracker
         <nav className="flex-grow">
           <ul className="space-y-2">
             <li>
@@ -947,8 +947,8 @@ const App = () => {
               <LogOut size={20} />
               <span>Logout</span>
             </button>
-          <p className="text-xs text-gray-400 text-center mt-2">User ID: {userId}</h1>
-        </div>
+          <p className="text-xs text-gray-400 text-center mt-2">User ID: {userId}</p>
+        
       </aside>
 
       <main className="flex-grow bg-gray-100 p-4 md:p-8 overflow-y-auto">
@@ -1106,7 +1106,7 @@ const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
                 <h1 className="text-3xl font-bold text-center text-blue-600">Cylinder Tracker</h1>
-                <p className="text-center text-gray-600">{isRegistering ? "Create a new account" : "Login to your account"}</h1>
+                <p className="text-center text-gray-600">{isRegistering ? "Create a new account" : "Login to your account"}</p>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -1118,7 +1118,7 @@ const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                    </div>
+                    
                     <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                         <input
@@ -1130,7 +1130,7 @@ const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
                             required
                         />
                     </div>
-                    {error && <p className="text-red-500 text-sm text-center">{error}</h1>}
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                     <button
                         type="submit"
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -1145,7 +1145,7 @@ const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
                     >
                         {isRegistering ? "Already have an account? Login" : "Don't have an account? Register"}
                     </button>
-                </div>
+                
             </div>
         </div>
     );
@@ -1282,8 +1282,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            {validationErrors.customerId && <p className="text-red-500 text-xs mt-1">{validationErrors.customerId}</h3>}
-          </div>
+            {validationErrors.customerId && <p className="text-red-500 text-xs mt-1">{validationErrors.customerId}</p>}
+          
           <div>
             <label htmlFor="cylinderName" className="block text-sm font-medium text-gray-700">Cylinder Name</label>
             <input
@@ -1295,8 +1295,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</h3>}
-          </div>
+            {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="totalCylinderValue" className="block text-sm font-medium text-gray-700">Total Cylinder Value ({CURRENCY_SYMBOL})</label>
@@ -1309,8 +1309,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
-              {validationErrors.totalCylinderValue && <p className="text-red-500 text-xs mt-1">{validationErrors.totalCylinderValue}</h1>}
-            </div>
+              {validationErrors.totalCylinderValue && <p className="text-red-500 text-xs mt-1">{validationErrors.totalCylinderValue}</p>}
+            
           </div>
           <div>
             <label htmlFor="cylinderDate" className="block text-sm font-medium text-gray-700">Date of the Cylinder</label>
@@ -1410,9 +1410,9 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
             />
             {newCylinder.imageUrl && (
               <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">Image Preview:</h1>
+                <p className="text-sm text-gray-600 mb-2">Image Preview:</p>
                 <img src={newCylinder.imageUrl} alt="Cylinder Preview" className="w-full h-auto rounded-lg" />
-              </div>
+              
             )}
           </div>
         </div>
@@ -1466,8 +1466,8 @@ const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalan
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          {validationErrors.amount && <p className="text-red-500 text-xs mt-1">{validationErrors.amount}</h1>}
-        </div>
+          {validationErrors.amount && <p className="text-red-500 text-xs mt-1">{validationErrors.amount}</p>}
+        
         <div>
           <label htmlFor="paymentDate" className="block text-sm font-medium text-gray-700">Payment Date</label>
           <input
@@ -1558,7 +1558,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
             ))}
           </select>
           {validationErrors.cylinderId && <p className="text-red-500 text-xs mt-1">{validationErrors.cylinderId}</p>}
-        </div>
+        
         {selectedCylinderForPayment && (
           <div className="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex justify-between text-sm">
@@ -1627,7 +1627,7 @@ const AddCustomerModal = ({ onClose, onAddCustomer, isProcessing }) => {
             required
           />
           {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
-        </div>
+        
         <div>
           <label htmlFor="customerContact" className="block text-sm font-medium text-gray-700">Contact Info (Phone/Email)</label>
           <input
@@ -1684,7 +1684,7 @@ const AddSupplierModal = ({ onClose, onAddSupplier, isProcessing }) => {
                         required
                     />
                     {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
-                </div>
+                
                 <div>
                     <label htmlFor="supplierContact" className="block text-sm font-medium text-gray-700">Contact Info (Phone/Email)</label>
                     <input
@@ -1790,7 +1790,7 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
         >
           <Download size={20} className="inline-block mr-2" /> Export to PDF
         </button>
-      </div>
+      
 
       <div id="customer-ledger-content" className="p-4 border rounded-lg bg-gray-50">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -1812,7 +1812,7 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
             </div>
         </div>
 
-        <h4 className="text-lg font-bold text-gray-800 mb-2">Transaction History</h4>
+        <h4 className="text-lg font-bold text-gray-800 mb-2">Transaction History
         {loadingTransactions ? (
           <div className="flex items-center justify-center p-8">
             <RotateCcw className="animate-spin text-blue-500" size={24} />
@@ -1822,22 +1822,22 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
           <div className="space-y-4 p-4 border rounded-lg bg-white">
             <div className="overflow-y-auto max-h-80">
               {customerTransactions.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No transactions found for this customer.</h4>
+                <p className="text-center text-gray-500 py-4">No transactions found for this customer.</p>
               ) : (
                 <div className="space-y-2">
                   {customerTransactions.map((transaction) => (
                     <div key={transaction.id} className="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
                       <div>
-                        <p className="text-sm font-semibold text-gray-800">{transaction.type}</h4>
-                        <p className="text-xs text-gray-600">{transaction.cylinderName}</h4>
-                        {transaction.note && <p className="text-xs text-gray-500 italic">Note: {transaction.note}</h4>}
-                      </div>
+                        <p className="text-sm font-semibold text-gray-800">{transaction.type}</p>
+                        <p className="text-xs text-gray-600">{transaction.cylinderName}</p>
+                        {transaction.note && <p className="text-xs text-gray-500 italic">Note: {transaction.note}</p>}
+                      
                       <div className="text-right">
                         <p className={`font-bold ${transaction.type === 'Payment' ? 'text-green-600' : 'text-indigo-600'}`}>
                           {transaction.type === 'Payment' ? `+ ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}` : `- ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}`}
-                        </h4>
+                        </p>
                         <p className="text-xs text-gray-500">{new Date(transaction.date?.seconds * 1000).toLocaleDateString('en-GB')}</p>
-                      </div>
+                      
                     </div>
                   ))}
                 </div>
@@ -1871,24 +1871,24 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
             <div className="space-y-4">
               {customerCylinders.map(cylinder => (
                   <div key={cylinder.id} className="bg-white p-4 rounded-lg shadow-sm">
-                      <h4 className="text-lg font-bold text-gray-800">{cylinder.name}</h4>
+                      <h4 className="text-lg font-bold text-gray-800">{cylinder.name}
                       {cylinder.imageUrl && (
                           <div className="my-2">
                               <img src={cylinder.imageUrl} alt={cylinder.name} className="w-full h-auto rounded-lg" />
-                          </div>
+                          
                       )}
                       <div className="text-sm text-gray-600 space-y-1">
-                          <p>Size: {cylinder.size || 'N/A'}</h4>
-                          <p>Length: {cylinder.length || 'N/A'}</h4>
-                          <p>Diameter: {cylinder.diameter || 'N/A'}</h4>
-                          <p>Colors: {cylinder.numberOfColors || 'N/A'}</h4>
-                          <p>Date: {cylinder.cylinderDate ? new Date(cylinder.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</h4>
-                      </div>
+                          <p>Size: {cylinder.size || 'N/A'}</p>
+                          <p>Length: {cylinder.length || 'N/A'}</p>
+                          <p>Diameter: {cylinder.diameter || 'N/A'}</p>
+                          <p>Colors: {cylinder.numberOfColors || 'N/A'}</p>
+                          <p>Date: {cylinder.cylinderDate ? new Date(cylinder.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p>
+                      
                   </div>
               ))}
           </div>
         )}
-      </div>
+      
     </ModalContainer>
   );
 };
@@ -1933,24 +1933,24 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
                     <div className="space-y-4 overflow-y-auto max-h-96">
                         {filteredCylinders.map(cylinder => (
                             <div key={cylinder.id} className="bg-white p-4 rounded-lg shadow-sm">
-                                <h4 className="text-lg font-bold text-gray-800">{cylinder.name}</h4>
+                                <h4 className="text-lg font-bold text-gray-800">{cylinder.name}
                                 {cylinder.imageUrl && (
                                     <div className="my-2">
                                         <img src={cylinder.imageUrl} alt={cylinder.name} className="w-full h-auto rounded-lg" />
-                                    </div>
+                                    
                                 )}
                                 <div className="text-sm text-gray-600 space-y-1">
-                                    <p>Size: {cylinder.size || 'N/A'}</h4>
-                                    <p>Length: {cylinder.length || 'N/A'}</h4>
-                                    <p>Diameter: {cylinder.diameter || 'N/A'}</h4>
-                                    <p>Colors: {cylinder.numberOfColors || 'N/A'}</h4>
-                                    <p>Date: {cylinder.cylinderDate ? new Date(cylinder.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</h4>
-                                </div>
+                                    <p>Size: {cylinder.size || 'N/A'}</p>
+                                    <p>Length: {cylinder.length || 'N/A'}</p>
+                                    <p>Diameter: {cylinder.diameter || 'N/A'}</p>
+                                    <p>Colors: {cylinder.numberOfColors || 'N/A'}</p>
+                                    <p>Date: {cylinder.cylinderDate ? new Date(cylinder.cylinderDate.seconds * 1000).toLocaleDateString('en-GB') : 'N/A'}</p>
+                                
                             </div>
                         ))}
                     </div>
                 )}
-            </div>
+            
         </ModalContainer>
     );
 };
@@ -1972,7 +1972,7 @@ const GenerateMessageModal = ({ reminderMessage, onClose, onCopy }) => (
       >
         <Clipboard className="inline-block mr-2" /> Copy to Clipboard
       </button>
-    </div>
+    
   </ModalContainer>
 );
 
@@ -2004,7 +2004,7 @@ const ConfirmationModal = ({ title, message, onClose, onConfirm }) => (
             >
                 Confirm Delete
             </button>
-        </div>
+        
     </ModalContainer>
 );
 
@@ -2013,7 +2013,7 @@ const ErrorModal = ({ message, onClose }) => (
     <div className="flex items-center space-x-4 text-red-700 bg-red-100 p-4 rounded-lg">
       <AlertTriangle size={24} />
       <p className="text-sm font-medium">{message}</p>
-    </div>
+    
     <button
       onClick={onClose}
       className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -2024,3 +2024,40 @@ const ErrorModal = ({ message, onClose }) => (
 );
 
 export default App;
+</div>
+</div>
+</div>
+</h4>
+</div>
+</div>
+</div>
+</h4>
+</div>
+</div>
+</div>
+</div>
+</h4>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</h1>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</h3>
+</div>
+</div>
