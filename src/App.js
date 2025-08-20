@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, getDocs, updateDoc as updateDocFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, updateDoc as updateDocFirestore } from 'firebase/firestore';
 import {
   AlertCircle,
   BarChart,
@@ -19,8 +19,7 @@ import {
   Download,
   LogOut,
   Mail,
-  Lock,
-  UserPlus
+  Lock
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -99,7 +98,6 @@ const App = () => {
   const [selectedSupplierForCylinderList, setSelectedSupplierForCylinderList] = useState(null);
   const [reminderMessage, setReminderMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [confirmationModal, setConfirmationModal] = useState(null);
   const [error, setError] = useState(null); 
   const [isAddingCustomerFromCylinder, setIsAddingCustomerFromCylinder] = useState(false);
@@ -132,7 +130,6 @@ const App = () => {
   // 2. Fetch data from Firestore once authenticated
   useEffect(() => {
     if (!db || !isAuthReady || !user || !userId) {
-        setLoading(false);
         return;
     }
 
@@ -143,8 +140,6 @@ const App = () => {
       } catch (e) {
         console.error("Failed to fetch cylinders:", e);
         setError("Could not load cylinder data. Please check your connection.");
-      } finally {
-        setLoading(false);
       }
     });
 
@@ -173,7 +168,7 @@ const App = () => {
       unsubscribeCustomers();
       unsubscribeSuppliers();
     };
-  }, [db, isAuthReady, user, userId]);
+  }, [db, isAuthReady, user, userId, appId]);
 
   // Handle user login with email and password
   const handleLogin = async (email, password) => {
@@ -216,19 +211,6 @@ const App = () => {
   const getCustomerName = (id) => {
     const customer = customers.find(c => c.id === id);
     return customer ? customer.name : 'Unknown Customer';
-  };
-  
-  // Helper function to get supplier name from ID
-  const getSupplierName = (id) => {
-    const supplier = suppliers.find(s => s.id === id);
-    return supplier ? supplier.name : 'Unknown Supplier';
-  };
-  
-  // Helper function to calculate outstanding balance
-  const calculateBalance = (cylinder) => {
-    const amountFromCustomer = parseFloat(cylinder.amountFromCustomer);
-    const amountPaid = parseFloat(cylinder.amountPaid) || 0;
-    return (amountFromCustomer - amountPaid).toFixed(2);
   };
   
   // Deletion helper function for subcollections
@@ -456,56 +438,46 @@ const App = () => {
   const handleDeleteCylinder = async (cylinderId) => {
     if (!db) return;
     try {
-      setLoading(true);
       await deleteCollection(`artifacts/${appId}/users/${userId}/cylinders/${cylinderId}/payments`);
       await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/cylinders`, cylinderId));
       console.log(`Cylinder ${cylinderId} and its payments deleted successfully.`);
-      setLoading(false);
       setConfirmationModal(null);
     } catch (e) {
       console.error("Error deleting cylinder: ", e);
       setError("Failed to delete cylinder. Please try again.");
-      setLoading(false);
     }
   };
 
   const handleDeleteCustomer = async (customerId) => {
     if (!db) return;
     try {
-      setLoading(true);
       const cylindersToDelete = cylinders.filter(c => c.customerId === customerId);
       const deletePromises = cylindersToDelete.map(c => handleDeleteCylinder(c.id));
       await Promise.all(deletePromises);
       await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/customers`, customerId));
       console.log(`Customer ${customerId} and all associated cylinders deleted.`);
-      setLoading(false);
       setConfirmationModal(null);
     } catch (e) {
       console.error("Error deleting customer: ", e);
       setError("Failed to delete customer. Please try again.");
-      setLoading(false);
     }
   };
   
   const handleDeleteSupplier = async (supplierId) => {
       if (!db) return;
       try {
-          setLoading(true);
           const cylindersToDelete = cylinders.filter(c => c.supplier === supplierId);
           if (cylindersToDelete.length > 0) {
               setError("Cannot delete supplier with associated cylinders.");
               setConfirmationModal(null);
-              setLoading(false);
               return;
           }
           await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/suppliers`, supplierId));
           console.log(`Supplier ${supplierId} deleted successfully.`);
-          setLoading(false);
           setConfirmationModal(null);
       } catch (e) {
           console.error("Error deleting supplier: ", e);
           setError("Failed to delete supplier. Please try again.");
-          setLoading(false);
       }
   };
 
@@ -1587,7 +1559,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Amount Due:</span>
-              <span className="font-bold text-red-500">{currencySymbol}{balanceForQuickPayment}</span>
+              <span className="font-bold text-red-500">{CURRENCY_SYMBOL}{balanceForQuickPayment}</span>
             </div>
           </div>
         )}
@@ -1820,15 +1792,15 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
             </div>
             <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center">
                 <span className="text-sm font-semibold text-gray-500">Total Value</span>
-                <span className="text-xl font-bold text-gray-800">{currencySymbol}{summary.totalCylinderValue}</span>
+                <span className="text-xl font-bold text-gray-800">{CURRENCY_SYMBOL}{summary.totalCylinderValue}</span>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center">
                 <span className="text-sm font-semibold text-gray-500">Amount Paid</span>
-                <span className="text-xl font-bold text-green-600">{currencySymbol}{summary.totalAmountPaid}</span>
+                <span className="text-xl font-bold text-green-600">{CURRENCY_SYMBOL}{summary.totalAmountPaid}</span>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center">
                 <span className="text-sm font-semibold text-gray-500">Outstanding</span>
-                <span className="text-xl font-bold text-red-600">{currencySymbol}{summary.totalOutstanding}</span>
+                <span className="text-xl font-bold text-red-600">{CURRENCY_SYMBOL}{summary.totalOutstanding}</span>
             </div>
         </div>
 
@@ -1854,7 +1826,7 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                       </div>
                       <div className="text-right">
                         <p className={`font-bold ${transaction.type === 'Payment' ? 'text-green-600' : 'text-indigo-600'}`}>
-                          {transaction.type === 'Payment' ? `+ ${currencySymbol}${parseFloat(transaction.amount).toFixed(2)}` : `- ${currencySymbol}${parseFloat(transaction.amount).toFixed(2)}`}
+                          {transaction.type === 'Payment' ? `+ ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}` : `- ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}`}
                         </p>
                         <p className="text-xs text-gray-500">{new Date(transaction.date?.seconds * 1000).toLocaleDateString('en-GB')}</p>
                       </div>
