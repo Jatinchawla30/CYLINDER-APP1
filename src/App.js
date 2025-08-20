@@ -830,7 +830,7 @@ const App = () => {
       case 'reminders':
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Reminders</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Reminders</p>
             {overdueCylinders.length === 0 ? (
               <div className="bg-green-100 border-l-4 border-green-500 p-4 rounded-xl">
                 <p className="font-bold text-green-800">No Overdue Payments!</p>
