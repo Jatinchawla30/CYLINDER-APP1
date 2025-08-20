@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
 
 // Firebase configuration from Environment Variables
 const firebaseConfig = {
@@ -86,8 +87,8 @@ const calculateBalance = (cylinder) => {
 // Main App component
 const App = () => {
   // Constant for currency symbol for easy global changes
-  const CURRENCY_SYMBOL = '₹';
-  
+  // (moved) using global CURRENCY_SYMBOL defined at top
+
   // State variables for Firebase services and data
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -620,7 +621,7 @@ const App = () => {
         return (
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Cylinder Tracking</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Cylinder Tracking</p>
               <div className="flex items-center space-x-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -709,7 +710,7 @@ const App = () => {
         return (
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Customer Management</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Customer Management</p>
               <button
                 onClick={() => exportToPdf('customers-table', 'Customer_List.pdf')}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 mr-2"
@@ -776,7 +777,7 @@ const App = () => {
           return (
               <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800">Supplier Management</h2>
+                      <h2 className="text-2xl font-bold text-gray-800">Supplier Management</p>
                       <button
                           onClick={() => setShowModal('addSupplier')}
                           className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
@@ -1562,11 +1563,11 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
           <div className="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Customer:</span>
-              <span className="font-medium text-gray-800">{customerNameForQuickPayment}</span>
+              <span className="font-medium text-gray-800">{getCustomerName(selectedCylinderForPayment.customerId)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Amount Due:</span>
-              <span className="font-bold text-red-500">{CURRENCY_SYMBOL}{balanceForQuickPayment}</span>
+              <span className="font-bold text-red-500">{CURRENCY_SYMBOL}{calculateBalance(selectedCylinderForPayment)}</span>
             </div>
           </div>
         )}
