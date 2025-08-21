@@ -547,29 +547,47 @@ const App = () => {
 
   const renderView = () => {
     switch (view) {
-      case 'dashboard':
-        return (
+      \1
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <BarChart className="text-blue-500 mb-2" size={48} />
               <p className="text-lg font-semibold">Total Cylinders</p>
-              <h3 className="text-3xl font-bold text-gray-800">{totalCylinders}
-            
+              <h3 className="text-3xl font-bold text-gray-800">{totalCylinders}</h3>
+            </div>
+
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <DollarSign className="text-green-500 mb-2" size={48} />
               <p className="text-lg font-semibold">Total Outstanding</p>
               <h3 className="text-3xl font-bold text-gray-800">{CURRENCY_SYMBOL}{totalOutstandingBalance.toFixed(2)}</h3>
-            
+            </div>
+
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
               <AlertCircle className="text-red-500 mb-2" size={48} />
               <p className="text-lg font-semibold">Overdue Payments</p>
               <h3 className="text-3xl font-bold text-gray-800">{overdueCylinders.length}</h3>
-            
-            <div className="md:col-span-2 lg:col-span-3">
-              <h4 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button
-                  onClick={() => { setEditingCylinder(null); setShowModal('addCylinder'); }}
+            </div>
+
+            {overdueCylinders.length > 0 && (
+              <div className="md:col-span-2 lg:col-span-3 mt-8 bg-red-100 border-l-4 border-red-500 p-4 rounded-xl shadow-inner">
+                <h4 className="text-xl font-bold text-red-800 mb-2">Overdue Cylinders</h4>
+                <ul className="space-y-2">
+                  {overdueCylinders.map(c => (
+                    <li key={c.id} className="flex justify-between items-center bg-red-50 p-3 rounded-lg shadow-sm">
+                      <span className="font-medium text-red-900">{c.name} ({getCustomerName(c.customerId)})</span>
+                      <span className="font-bold text-red-700">{CURRENCY_SYMBOL}{parseFloat(c.balance).toFixed(2)} Due</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); generateReminderMessage(c); }}
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-full text-sm font-semibold"
+                      >
+                        Remind
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+\3 setShowModal('addCylinder'); }}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200"
                 >
                   <Plus className="inline-block mr-2" /> Add New Cylinder
@@ -2012,16 +2030,17 @@ const ErrorModal = ({ message, onClose }) => (
   <ModalContainer title="Application Error" onClose={onClose}>
     <div className="flex items-center space-x-4 text-red-700 bg-red-100 p-4 rounded-lg">
       <AlertTriangle size={24} />
-      <p className="text-sm font-medium">{message}</p>
+      <p className="text-sm font-medium">{message</p>
     
     <button
-      onClick={onClose}
+      onClick={onClose
       className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
     >
       Close
     </button>
   </ModalContainer>
 );
+
 
 
 
