@@ -86,9 +86,6 @@ const calculateBalance = (cylinder) => {
 
 // Main App component
 const App = () => {
-  // Constant for currency symbol for easy global changes
-  // (moved) using global CURRENCY_SYMBOL defined at top
-
   // State variables for Firebase services and data
   const [user, setUser] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -511,7 +508,7 @@ const App = () => {
 
   const generateReminderMessage = (cylinder) => {
     const balance = parseFloat(cylinder.balance).toFixed(2);
-    const message = `Dear Customer,\n\nThis is a friendly reminder regarding the outstanding balance for the cylinder "${cylinder.name}". The amount due is ${CURRENCY_SYMBOL}${balance}.\n\nPlease let us know when you can clear the payment.\n\nThank you,\nSHRI GURUNAK INDUSTRIES`;
+    const message = `Dear Customer,\n\nThis is a friendly reminder regarding the outstanding balance for the cylinder "${cylinder.name}". The amount due is ${CURRENCY_SYMBOL}{balance}.\n\nPlease let us know when you can clear the payment.\n\nThank you,\nSHRI GURUNAK INDUSTRIES`;
     setReminderMessage(message);
     setSelectedCylinder(cylinder);
     setShowModal('generateMessage');
@@ -817,7 +814,7 @@ const App = () => {
                                                   })}
                                                   className="text-red-600 hover:text-red-900 transition-colors duration-200 ml-2"
                                               >
-                                                  <Trash2 size={16} />
+                                                  Trash2 size={16} />
                                               </button>
                                           </td>
                                       </tr>
