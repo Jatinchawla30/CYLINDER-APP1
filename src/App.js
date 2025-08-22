@@ -817,7 +817,7 @@ const App = () => {
                                                   })}
                                                   className="text-red-600 hover:text-red-900 transition-colors duration-200 ml-2"
                                               >
-                                                  Trash2 size={16} />
+                                                  <Trash2 size={16} />
                                               </button>
                                           </td>
                                       </tr>
