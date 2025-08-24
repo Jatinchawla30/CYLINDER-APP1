@@ -1147,3 +1147,5 @@ const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
         </div>
     );
 };
+
+export default App;
