@@ -32,7 +32,7 @@ const firebaseConfig = {
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  appId: process.env.APP_ID,
 };
 
 // Initialize Firebase services and get instances outside the component
@@ -84,7 +84,78 @@ const calculateBalance = (cylinder) => {
   return (amountFromCustomer - amountPaid).toFixed(2);
 };
 
-// All Modal Components with Tailwind CSS
+const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isRegistering, setIsRegistering] = useState(false);
+
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                clearError();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, clearError]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (isRegistering) {
+            onRegister(email, password);
+        } else {
+            onLogin(email, password);
+        }
+    };
+
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+                <h1 className="text-3xl font-bold text-center text-blue-600">Cylinder Tracker</h1>
+                <p className="text-center text-gray-600">{isRegistering ? "Create a new account" : "Login to your account"}</p>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    <button
+                        type="submit"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                    >
+                        {isRegistering ? "Register" : "Login"}
+                    </button>
+                </form>
+                <div className="flex items-center justify-center">
+                    <button
+                        onClick={() => { setIsRegistering(!isRegistering); clearError(); }}
+                        className="text-blue-600 hover:underline text-sm"
+                    >
+                        {isRegistering ? "Already have an account? Login" : "Don't have an account? Register"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ModalContainer = ({ children, title, onClose }) => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg relative">
