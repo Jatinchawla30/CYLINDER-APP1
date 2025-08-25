@@ -1560,4 +1560,107 @@ const App = () => {
             <AddCustomerModal
               onClose={() => setShowAddCustomerModal(false)}
               onAddCustomer={onAddCustomer}
-              isProcessing={is
+              isProcessing={isProcessing}
+            />
+          )}
+          {showAddSupplierModal && (
+            <AddSupplierModal
+              onClose={() => setShowAddSupplierModal(false)}
+              onAddSupplier={onAddSupplier}
+              isProcessing={isProcessing}
+            />
+          )}
+          {showAddPaymentModal && selectedCylinder && (
+            <AddPaymentModal
+              selectedCylinder={selectedCylinder}
+              onClose={() => setShowAddPaymentModal(false)}
+              onAddPayment={onAddPayment}
+              onClearBalance={onClearBalance}
+              currencySymbol={CURRENCY_SYMBOL}
+              isProcessing={isProcessing}
+            />
+          )}
+          {showQuickPaymentModal && (
+            <QuickPaymentModal
+              cylinders={cylinders}
+              customers={customers}
+              getCustomerName={getCustomerName}
+              calculateBalance={calculateBalance}
+              onClose={() => setShowQuickPaymentModal(false)}
+              onAddPayment={onAddPayment}
+              currencySymbol={CURRENCY_SYMBOL}
+              isProcessing={isProcessing}
+            />
+          )}
+          {showCustomerLedgerModal && selectedCustomer && (
+            <CustomerLedgerModal
+              db={db}
+              appId={firebaseConfig.appId}
+              userId={user.uid}
+              selectedCustomer={selectedCustomer}
+              cylinders={cylinders}
+              onClose={() => setShowCustomerLedgerModal(false)}
+              currencySymbol={CURRENCY_SYMBOL}
+              exportToPdf={exportToPdf}
+            />
+          )}
+          {showCustomerCylinderListModal && selectedCustomer && (
+            <CustomerCylinderListModal
+              selectedCustomer={selectedCustomer}
+              cylinders={cylinders}
+              onClose={() => setShowCustomerCylinderListModal(false)}
+              currencySymbol={CURRENCY_SYMBOL}
+              exportToPdf={exportToPdf}
+            />
+          )}
+          {showSupplierCylinderListModal && selectedSupplier && (
+            <SupplierCylinderListModal
+              selectedSupplier={selectedSupplier}
+              cylinders={cylinders}
+              onClose={() => setShowSupplierCylinderListModal(false)}
+              currencySymbol={CURRENCY_SYMBOL}
+              exportToPdf={exportToPdf}
+            />
+          )}
+          {showGenerateMessageModal && (
+            <GenerateMessageModal
+              reminderMessage={reminderMessage}
+              onClose={() => setShowGenerateMessageModal(false)}
+              onCopy={handleCopyMessage}
+            />
+          )}
+          {showMessageModal && (
+            <MessageModal
+              title={messageModalContent.title}
+              message={messageModalContent.message}
+              onClose={() => setShowMessageModal(false)}
+            />
+          )}
+          {showConfirmationModal && (
+            <ConfirmationModal
+              title={confirmationModalContent.title}
+              message={confirmationModalContent.message}
+              onClose={() => setShowConfirmationModal(false)}
+              onConfirm={confirmationModalContent.onConfirm}
+            />
+          )}
+          {showErrorModal && (
+            <ErrorModal
+              message={error}
+              onClose={() => setShowErrorModal(false)}
+            />
+          )}
+        </div>
+      ) : (
+        <LoginPage
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+          error={error}
+          clearError={clearError}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;
