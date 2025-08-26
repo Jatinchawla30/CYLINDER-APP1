@@ -23,9 +23,8 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
 
-// Firebase configuration from Environment Variables
+const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -35,7 +34,6 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase services and get instances outside the component
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
@@ -84,78 +82,14 @@ const calculateBalance = (cylinder) => {
   return (amountFromCustomer - amountPaid).toFixed(2);
 };
 
-const LoginPage = ({ onLogin, onRegister, error, clearError }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isRegistering, setIsRegistering] = useState(false);
-
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => {
-                clearError();
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, clearError]);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (isRegistering) {
-            onRegister(email, password);
-        } else {
-            onLogin(email, password);
-        }
-    };
-
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-                <h1 className="text-3xl font-bold text-center text-blue-600">Cylinder Tracker</h1>
-                <p className="text-center text-gray-600">{isRegistering ? "Create a new account" : "Login to your account"}</p>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                    >
-                        {isRegistering ? "Register" : "Login"}
-                    </button>
-                </form>
-                <div className="flex items-center justify-center">
-                    <button
-                        onClick={() => { setIsRegistering(!isRegistering); clearError(); }}
-                        className="text-blue-600 hover:underline text-sm"
-                    >
-                        {isRegistering ? "Already have an account? Login" : "Don't have an account? Register"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+// Deletion helper function for subcollections
+const deleteCollection = async (db, collectionPath) => {
+  const querySnapshot = await getDocs(collection(db, collectionPath));
+  const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+  return Promise.all(deletePromises);
 };
 
+// All Modal Components with Tailwind CSS
 const ModalContainer = ({ children, title, onClose }) => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg relative">
@@ -176,7 +110,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
       totalCylinderValue: '',
       amountFromCustomer: '',
       paymentPolicy: { type: 'percentage', value: '100' },
-      cylinderDate: '', 
+      cylinderDate: '',
       size: '',
       length: '',
       diameter: '',
@@ -184,8 +118,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
       numberOfCylinders: '1',
       cylinderType: 'surface',
       supplier: '',
-      imageUrl: '', 
-      imageFile: null, 
+      imageUrl: '',
+      imageFile: null,
     }
   );
   const [validationErrors, setValidationErrors] = useState({});
@@ -207,13 +141,11 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
     }
   };
 
-
   const validate = () => {
     const errors = {};
     if (!newCylinder.name) errors.name = 'Cylinder name is required.';
     if (!newCylinder.customerId) errors.customerId = 'Customer selection is required.';
     if (!newCylinder.totalCylinderValue || isNaN(parseFloat(newCylinder.totalCylinderValue))) errors.totalCylinderValue = 'Total value must be a number.';
-    
     if (newCylinder.paymentPolicy.type === 'percentage') {
       const percentage = parseFloat(newCylinder.paymentPolicy.value);
       if (isNaN(percentage) || percentage < 0 || percentage > 100) {
@@ -225,7 +157,6 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         errors.paymentPolicyValue = 'Fixed amount must be a positive number.';
       }
     }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -233,20 +164,18 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate() || isProcessing) return;
-    
-    setIsUploading(true);
 
+    setIsUploading(true);
     let finalData = { ...newCylinder };
     if (finalData.imageFile) {
-        const imageUrl = await uploadImageToCloudinary(finalData.imageFile);
-        if (imageUrl) {
-            finalData = { ...finalData, imageUrl };
-        } else {
-            setIsUploading(false);
-            return;
-        }
+      const imageUrl = await uploadImageToCloudinary(finalData.imageFile);
+      if (imageUrl) {
+        finalData = { ...finalData, imageUrl };
+      } else {
+        setIsUploading(false);
+        return;
+      }
     }
-
     delete finalData.imageFile;
 
     if (editingCylinder) {
@@ -254,10 +183,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
     } else {
       onAddCylinder(finalData);
     }
-
     setIsUploading(false);
   };
-
 
   return (
     <ModalContainer title={editingCylinder ? "Edit Cylinder" : "Add New Cylinder"} onClose={onClose}>
@@ -328,83 +255,93 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="size" className="block text-sm font-medium text-gray-700">Size</label>
-                <input
-                  id="size"
-                  type="text"
-                  placeholder="Size"
-                  value={newCylinder.size}
-                  onChange={(e) => setNewCylinder({ ...newCylinder, size: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="length" className="block text-sm font-medium text-gray-700">Length</label>
-                <input
-                  id="length"
-                  type="text"
-                  placeholder="Length"
-                  value={newCylinder.length}
-                  onChange={(e) => setNewCylinder({ ...newCylinder, length: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="diameter" className="block text-sm font-medium text-gray-700">Diameter</label>
-                <input
-                  id="diameter"
-                  type="text"
-                  placeholder="Diameter"
-                  value={newCylinder.diameter}
-                  onChange={(e) => setNewCylinder({ ...newCylinder, diameter: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="numberOfColors" className="block text-sm font-medium text-gray-700">Number of Colors</label>
-                <input
-                  id="numberOfColors"
-                  type="number"
-                  placeholder="Number of Colors"
-                  value={newCylinder.numberOfColors}
-                  onChange={(e) => setNewCylinder({ ...newCylinder, numberOfColors: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            <div>
+              <label htmlFor="size" className="block text-sm font-medium text-gray-700">Size</label>
+              <input
+                id="size"
+                type="text"
+                placeholder="Size"
+                value={newCylinder.size}
+                onChange={(e) => setNewCylinder({ ...newCylinder, size: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="length" className="block text-sm font-medium text-gray-700">Length</label>
+              <input
+                id="length"
+                type="text"
+                placeholder="Length"
+                value={newCylinder.length}
+                onChange={(e) => setNewCylinder({ ...newCylinder, length: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                  <label htmlFor="cylinderType" className="block text-sm font-medium text-gray-700">Cylinder Type</label>
-                  <select
-                      id="cylinderType"
-                      value={newCylinder.cylinderType}
-                      onChange={(e) => setNewCylinder({ ...newCylinder, cylinderType: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                      <option value="surface">Surface</option>
-                      <option value="reverse">Reverse</option>
-                  </select>
-              </div>
-              <div>
-                  <label htmlFor="supplier" className="block text-sm font-medium text-gray-700">Supplier</label>
-                  <select
-                    id="supplier"
-                    value={newCylinder.supplier}
-                    onChange={(e) => setNewCylinder({ ...newCylinder, supplier: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Supplier</option>
-                    {suppliers.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-              </div>
+            <div>
+              <label htmlFor="diameter" className="block text-sm font-medium text-gray-700">Diameter</label>
+              <input
+                id="diameter"
+                type="text"
+                placeholder="Diameter"
+                value={newCylinder.diameter}
+                onChange={(e) => setNewCylinder({ ...newCylinder, diameter: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="numberOfColors" className="block text-sm font-medium text-gray-700">Number of Colors</label>
+              <input
+                id="numberOfColors"
+                type="number"
+                placeholder="Number of Colors"
+                value={newCylinder.numberOfColors}
+                onChange={(e) => setNewCylinder({ ...newCylinder, numberOfColors: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="numberOfCylinders" className="block text-sm font-medium text-gray-700">Number of Cylinders</label>
+              <input
+                id="numberOfCylinders"
+                type="number"
+                placeholder="Number of Cylinders"
+                value={newCylinder.numberOfCylinders}
+                onChange={(e) => setNewCylinder({ ...newCylinder, numberOfCylinders: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="cylinderType" className="block text-sm font-medium text-gray-700">Cylinder Type</label>
+              <select
+                id="cylinderType"
+                value={newCylinder.cylinderType}
+                onChange={(e) => setNewCylinder({ ...newCylinder, cylinderType: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="surface">Surface</option>
+                <option value="reverse">Reverse</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="supplier" className="block text-sm font-medium text-gray-700">Supplier</label>
+            <select
+              id="supplier"
+              value={newCylinder.supplier}
+              onChange={(e) => setNewCylinder({ ...newCylinder, supplier: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="pt-4 border-t border-gray-200">
             <label htmlFor="cylinderImage" className="block text-sm font-bold text-gray-700 mb-2">Cylinder Image</label>
             <input
@@ -421,7 +358,6 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
             )}
           </div>
         </div>
-        
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -856,7 +792,7 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                                             </div>
                                             <div className="text-right">
                                                 <p className={`font-bold ${transaction.type === 'Payment' ? 'text-green-600' : 'text-indigo-600'}`}>
-                                                    {transaction.type === 'Payment' ? `+ ${currencySymbol}${parseFloat(transaction.amount).toFixed(2)}` : `- ${currencySymbol}${parseFloat(transaction.amount).toFixed(2)}`}
+                                                    {transaction.type === 'Payment' ? `+ ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}` : `- ${CURRENCY_SYMBOL}${parseFloat(transaction.amount).toFixed(2)}`}
                                                 </p>
                                                 <p className="text-xs text-gray-500">{new Date(transaction.date?.seconds * 1000).toLocaleDateString('en-GB')}</p>
                                             </div>
@@ -872,17 +808,8 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
     );
 };
 
-// CustomerCylinderListModal component
 const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, currencySymbol, exportToPdf }) => {
-    const customerCylinders = cylinders.filter(c => c.id === selectedCustomer.id);
-    const filteredCylinders = customerCylinders.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (c.size && c.size.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (c.length && c.length.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (c.diameter && c.diameter.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (c.numberOfColors && c.numberOfColors.toString().includes(searchQuery.toLowerCase())) ||
-        (c.cylinderDate && new Date(c.cylinderDate.seconds * 1000).toLocaleDateString('en-GB').includes(searchQuery))
-    );
+    const customerCylinders = cylinders.filter(c => c.customerId === selectedCustomer.id);
 
     return (
         <ModalContainer title={`Cylinders for ${selectedCustomer.name || 'Customer'}`} onClose={onClose}>
@@ -896,11 +823,11 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
             </div>
 
             <div id="customer-cylinders-list-content" className="space-y-4 p-4 border rounded-lg bg-gray-50">
-                {filteredCylinders.length === 0 ? (
-                    <p className="text-center text-gray-500">No matching cylinders found.</p>
+                {customerCylinders.length === 0 ? (
+                    <p className="text-center text-gray-500">No cylinders found for this customer.</p>
                 ) : (
-                    <div className="space-y-4 overflow-y-auto max-h-96">
-                        {filteredCylinders.map(cylinder => (
+                    <div className="space-y-4">
+                        {customerCylinders.map(cylinder => (
                             <div key={cylinder.id} className="bg-white p-4 rounded-lg shadow-sm">
                                 <h4 className="text-lg font-bold text-gray-800">{cylinder.name}</h4>
                                 {cylinder.imageUrl && (
@@ -1059,7 +986,6 @@ const ErrorModal = ({ message, onClose }) => (
     </ModalContainer>
 );
 
-// Main App component
 const App = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
@@ -1313,6 +1239,57 @@ const App = () => {
         } finally {
             setIsProcessing(false);
         }
+    };
+
+    const exportToPdf = async (elementId, fileName) => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        try {
+            const canvas = await html2canvas(element);
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+            pdf.save(fileName);
+        } catch (error) {
+            setError(error.message);
+            setShowErrorModal(true);
+        }
+    };
+
+    const getCustomerName = (customerId) => {
+        const customer = customers.find(c => c.id === customerId);
+        return customer ? customer.name : 'Unknown';
+    };
+
+    const handleGenerateReminder = (customer, cylinders) => {
+        const customerCylinders = cylinders.filter(c => c.customerId === customer.id && parseFloat(c.balance) > 0);
+        if (customerCylinders.length === 0) {
+            setMessageModalContent({
+                title: 'No Outstanding Payments',
+                message: `No outstanding payments found for ${customer.name}.`
+            });
+            setShowMessageModal(true);
+            return;
+        }
+
+        const totalOutstanding = customerCylinders.reduce((sum, c) => sum + parseFloat(c.balance), 0).toFixed(2);
+        const message = `Dear ${customer.name},\n\nPlease be reminded of your outstanding balance of ${CURRENCY_SYMBOL}${totalOutstanding} for the following cylinders:\n\n${customerCylinders.map(c => `- ${c.name}: ${CURRENCY_SYMBOL}${c.balance}`).join('\n')}\n\nKindly settle the amount at your earliest convenience.\n\nThank you,\nCylinder Tracker Team`;
+        setReminderMessage(message);
+        setShowGenerateMessageModal(true);
+    };
+
+    const handleCopyMessage = () => {
+        navigator.clipboard.writeText(reminderMessage);
+        setMessageModalContent({
+            title: 'Message Copied',
+            message: 'Reminder message has been copied to clipboard.'
+        });
+        setShowMessageModal(true);
+        setShowGenerateMessageModal(false);
+    };
+
+    const onOpenAddCustomer = () => {
+        setShowAddCustomerModal(true);
     };
 
     const handleDeleteCustomer = async (customerId) => {
