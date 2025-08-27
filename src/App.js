@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signOut, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, updateDoc as updateDocFirestore, serverTimestamp } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import {
-  AlertCircle,
-  BarChart,
+  AlertTriangle,
   Clipboard,
   DollarSign,
   Plus,
   RotateCcw,
   Search,
-  Settings,
   User,
   X,
-  FileText,
-  Trash2,
-  AlertTriangle,
   Download,
   LogOut,
   Mail,
@@ -23,6 +18,7 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+
 const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
 
 // Firebase configuration from Environment Variables
@@ -79,8 +75,8 @@ const uploadImageToCloudinary = async (imageFile) => {
 
 // Helper function to calculate outstanding balance
 const calculateBalance = (cylinder) => {
-  const amountFromCustomer = parseFloat(cylinder.amountFromCustomer);
-  const amountPaid = parseFloat(cylinder.amountPaid) || 0;
+  const amountFromCustomer = parseFloat(cylinder.amountFromCustomer || 0);
+  const amountPaid = parseFloat(cylinder.amountPaid || 0);
   return (amountFromCustomer - amountPaid).toFixed(2);
 };
 
@@ -176,7 +172,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
       totalCylinderValue: '',
       amountFromCustomer: '',
       paymentPolicy: { type: 'percentage', value: '100' },
-      cylinderDate: '', 
+      cylinderDate: '',
       size: '',
       length: '',
       diameter: '',
@@ -184,8 +180,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
       numberOfCylinders: '1',
       cylinderType: 'surface',
       supplier: '',
-      imageUrl: '', 
-      imageFile: null, 
+      imageUrl: '',
+      imageFile: null,
     }
   );
   const [validationErrors, setValidationErrors] = useState({});
@@ -213,7 +209,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
     if (!newCylinder.name) errors.name = 'Cylinder name is required.';
     if (!newCylinder.customerId) errors.customerId = 'Customer selection is required.';
     if (!newCylinder.totalCylinderValue || isNaN(parseFloat(newCylinder.totalCylinderValue))) errors.totalCylinderValue = 'Total value must be a number.';
-    
+
     if (newCylinder.paymentPolicy.type === 'percentage') {
       const percentage = parseFloat(newCylinder.paymentPolicy.value);
       if (isNaN(percentage) || percentage < 0 || percentage > 100) {
@@ -233,7 +229,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate() || isProcessing) return;
-    
+
     setIsUploading(true);
 
     let finalData = { ...newCylinder };
@@ -375,7 +371,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                 />
               </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                   <label htmlFor="cylinderType" className="block text-sm font-medium text-gray-700">Cylinder Type</label>
@@ -421,7 +417,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
             )}
           </div>
         </div>
-        
+
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -872,12 +868,32 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
     );
 };
 
+// CustomerCylinderListModal component
 const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, currencySymbol, exportToPdf }) => {
+    const [searchQuery, setSearchQuery] = useState('');
     const customerCylinders = cylinders.filter(c => c.customerId === selectedCustomer.id);
+    const filteredCylinders = customerCylinders.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.size && c.size.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (c.length && c.length.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (c.diameter && c.diameter.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (c.numberOfColors && c.numberOfColors.toString().includes(searchQuery.toLowerCase())) ||
+        (c.cylinderDate && new Date(c.cylinderDate.seconds * 1000).toLocaleDateString('en-GB').includes(searchQuery))
+    );
 
     return (
         <ModalContainer title={`Cylinders for ${selectedCustomer.name || 'Customer'}`} onClose={onClose}>
-            <div className="flex justify-end items-center mb-4">
+            <div className="flex justify-between items-center mb-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search cylinders..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
                 <button
                     onClick={() => exportToPdf('customer-cylinders-list-content', `Cylinders_${selectedCustomer.name || 'Customer'}.pdf`)}
                     className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
@@ -887,11 +903,11 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
             </div>
 
             <div id="customer-cylinders-list-content" className="space-y-4 p-4 border rounded-lg bg-gray-50">
-                {customerCylinders.length === 0 ? (
-                    <p className="text-center text-gray-500">No cylinders found for this customer.</p>
+                {filteredCylinders.length === 0 ? (
+                    <p className="text-center text-gray-500">No matching cylinders found.</p>
                 ) : (
-                    <div className="space-y-4">
-                        {customerCylinders.map(cylinder => (
+                    <div className="space-y-4 overflow-y-auto max-h-96">
+                        {filteredCylinders.map(cylinder => (
                             <div key={cylinder.id} className="bg-white p-4 rounded-lg shadow-sm">
                                 <h4 className="text-lg font-bold text-gray-800">{cylinder.name}</h4>
                                 {cylinder.imageUrl && (
@@ -915,6 +931,7 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
     );
 };
 
+// SupplierCylinderListModal component
 const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, currencySymbol, exportToPdf }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const supplierCylinders = cylinders.filter(c => c.supplier === selectedSupplier.id);
@@ -929,7 +946,7 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
 
     return (
         <ModalContainer title={`Cylinders from ${selectedSupplier.name || 'Supplier'}`} onClose={onClose}>
-            <div className="flex justify-end items-center mb-4">
+            <div className="flex justify-between items-center mb-4">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
@@ -937,7 +954,7 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
                         placeholder="Search cylinders..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                 </div>
                 <button
@@ -977,6 +994,7 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
     );
 };
 
+// GenerateMessageModal component
 const GenerateMessageModal = ({ reminderMessage, onClose, onCopy }) => (
     <ModalContainer title="Generate Reminder Message" onClose={onClose}>
         <div className="space-y-4">
@@ -998,6 +1016,7 @@ const GenerateMessageModal = ({ reminderMessage, onClose, onCopy }) => (
     </ModalContainer>
 );
 
+// MessageModal component
 const MessageModal = ({ title, message, onClose }) => (
     <ModalContainer title={title} onClose={onClose}>
         <p className="text-center text-lg text-gray-700">{message}</p>
@@ -1010,6 +1029,7 @@ const MessageModal = ({ title, message, onClose }) => (
     </ModalContainer>
 );
 
+// ConfirmationModal component
 const ConfirmationModal = ({ title, message, onClose, onConfirm }) => (
     <ModalContainer title={title} onClose={onClose}>
         <p className="text-center text-lg text-gray-700">{message}</p>
@@ -1030,6 +1050,7 @@ const ConfirmationModal = ({ title, message, onClose, onConfirm }) => (
     </ModalContainer>
 );
 
+// ErrorModal component
 const ErrorModal = ({ message, onClose }) => (
     <ModalContainer title="Application Error" onClose={onClose}>
         <div className="flex items-center space-x-4 text-red-700 bg-red-100 p-4 rounded-lg">
@@ -1045,6 +1066,7 @@ const ErrorModal = ({ message, onClose }) => (
     </ModalContainer>
 );
 
+// Main App component
 const App = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
@@ -1300,6 +1322,34 @@ const App = () => {
         }
     };
 
+    const handleDeleteCustomer = async (customerId) => {
+        if (!user) return;
+        setIsProcessing(true);
+        try {
+            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`, customerId));
+            setShowConfirmationModal(false);
+        } catch (error) {
+            setError(error.message);
+            setShowErrorModal(true);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleDeleteSupplier = async (supplierId) => {
+        if (!user) return;
+        setIsProcessing(true);
+        try {
+            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`, supplierId));
+            setShowConfirmationModal(false);
+        } catch (error) {
+            setError(error.message);
+            setShowErrorModal(true);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     const exportToPdf = async (elementId, fileName) => {
         const element = document.getElementById(elementId);
         if (!element) return;
@@ -1332,7 +1382,9 @@ const App = () => {
         }
 
         const totalOutstanding = customerCylinders.reduce((sum, c) => sum + parseFloat(c.balance), 0).toFixed(2);
-        const message = `Dear ${customer.name},\n\nPlease be reminded of your outstanding balance of ${CURRENCY_SYMBOL}${totalOutstanding} for the following cylinders:\n\n${customerCylinders.map(c => `- ${c.name}: ${CURRENCY_SYMBOL}${c.balance}`).join('\n')}\n\nKindly settle the amount at your earliest convenience.\n\nThank you,\nCylinder Tracker Team`;
+        const message = `Dear ${customer.name},\n\nPlease be reminded of your outstanding balance of ${CURRENCY_SYMBOL}${totalOutstanding} for the following cylinders:\n\n${customerCylinders.map(c => (
+            `- ${c.name}: ${CURRENCY_SYMBOL}${c.balance}`
+        )).join('\n')}\n\nThank you.`;
         setReminderMessage(message);
         setShowGenerateMessageModal(true);
     };
@@ -1350,51 +1402,6 @@ const App = () => {
     const onOpenAddCustomer = () => {
         setShowAddCustomerModal(true);
     };
-
-    const handleDeleteCustomer = async (customerId) => {
-        if (!user) return;
-        setIsProcessing(true);
-        try {
-            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`, customerId));
-            setShowConfirmationModal(false);
-        } catch (error) {
-            setError(error.message);
-            setShowErrorModal(true);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-    
-    const handleDeleteSupplier = async (supplierId) => {
-        if (!user) return;
-        setIsProcessing(true);
-        try {
-            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`, supplierId));
-            setShowConfirmationModal(false);
-        } catch (error) {
-            setError(error.message);
-            setShowErrorModal(true);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const handleViewLedger = (customer) => {
-        setSelectedCustomer(customer);
-        setShowCustomerLedgerModal(true);
-    };
-
-    const handleViewCylinderList = (customer) => {
-        setSelectedCustomer(customer);
-        setShowCustomerCylinderListModal(true);
-    };
-
-    const handleViewSupplierCylinderList = (supplier) => {
-        setSelectedSupplier(supplier);
-        setShowSupplierCylinderListModal(true);
-    };
-
-    const overdueCylinders = cylinders.filter(c => parseFloat(c.balance) > 0);
 
     return (
         <div className="min-h-screen bg-gray-100">
