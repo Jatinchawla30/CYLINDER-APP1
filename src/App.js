@@ -977,7 +977,6 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
     );
 };
 
-// GenerateMessageModal component
 const GenerateMessageModal = ({ reminderMessage, onClose, onCopy }) => (
     <ModalContainer title="Generate Reminder Message" onClose={onClose}>
         <div className="space-y-4">
@@ -999,7 +998,6 @@ const GenerateMessageModal = ({ reminderMessage, onClose, onCopy }) => (
     </ModalContainer>
 );
 
-// MessageModal component
 const MessageModal = ({ title, message, onClose }) => (
     <ModalContainer title={title} onClose={onClose}>
         <p className="text-center text-lg text-gray-700">{message}</p>
@@ -1012,7 +1010,6 @@ const MessageModal = ({ title, message, onClose }) => (
     </ModalContainer>
 );
 
-// ConfirmationModal component
 const ConfirmationModal = ({ title, message, onClose, onConfirm }) => (
     <ModalContainer title={title} onClose={onClose}>
         <p className="text-center text-lg text-gray-700">{message}</p>
@@ -1033,7 +1030,6 @@ const ConfirmationModal = ({ title, message, onClose, onConfirm }) => (
     </ModalContainer>
 );
 
-// ErrorModal component
 const ErrorModal = ({ message, onClose }) => (
     <ModalContainer title="Application Error" onClose={onClose}>
         <div className="flex items-center space-x-4 text-red-700 bg-red-100 p-4 rounded-lg">
@@ -1049,7 +1045,6 @@ const ErrorModal = ({ message, onClose }) => (
     </ModalContainer>
 );
 
-// Main App component
 const App = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
