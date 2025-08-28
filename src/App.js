@@ -21,13 +21,14 @@ import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS / FIREBASE INIT ---
 const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+// Use provided firebase config or a placeholder if not available
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
@@ -1026,6 +1027,7 @@ const ErrorModal = ({ message, onClose }) => (
 // Main App component
 const App = () => {
     const [user, setUser] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false);
     const [error, setError] = useState('');
     const [cylinders, setCylinders] = useState([]);
     const [customers, setCustomers] = useState([]);
@@ -1055,6 +1057,7 @@ const App = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
+            setIsAuthReady(true);
         });
         return () => unsubscribe();
     }, []);
@@ -1360,9 +1363,21 @@ const App = () => {
         setShowAddCustomerModal(true);
     };
 
+    // A simple loading indicator component for when Firebase Auth state is being checked
+    const LoadingIndicator = () => (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="flex flex-col items-center">
+                <RotateCcw className="animate-spin text-blue-500 mb-4" size={48} />
+                <p className="text-gray-600">Loading...</p>
+            </div>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-gray-100">
-            {user ? (
+            {!isAuthReady ? (
+                <LoadingIndicator />
+            ) : user ? (
                 <div className="p-4">
                     <div className="flex justify-between items-center mb-4">
                         <h1 className="text-2xl font-bold text-gray-800">Cylinder Tracker Dashboard</h1>
