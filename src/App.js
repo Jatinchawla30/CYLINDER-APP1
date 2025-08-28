@@ -1027,6 +1027,7 @@ const ErrorModal = ({ message, onClose }) => (
 // Main App component
 const App = () => {
     const [user, setUser] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false);
     const [error, setError] = useState('');
     const [cylinders, setCylinders] = useState([]);
     const [customers, setCustomers] = useState([]);
@@ -1056,6 +1057,7 @@ const App = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
+            setIsAuthReady(true);
         });
         return () => unsubscribe();
     }, []);
@@ -1360,6 +1362,15 @@ const App = () => {
     const onOpenAddCustomer = () => {
         setShowAddCustomerModal(true);
     };
+
+    const LoadingIndicator = () => (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="flex flex-col items-center">
+                <RotateCcw className="animate-spin text-blue-500 mb-4" size={48} />
+                <p className="text-gray-600">Loading...</p>
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-100">
