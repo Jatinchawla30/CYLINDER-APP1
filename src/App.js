@@ -21,8 +21,17 @@ import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS ---
 const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
+// Firebase configuration from Environment Variables
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
-// --- HELPER: CLOUDINARY IMAGE UPLOAD ---
+// Cloudinary image upload function
 const uploadImageToCloudinary = async (imageFile) => {
     if (!imageFile) return null;
     const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -546,7 +555,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
                         id="paymentNotes"
                         placeholder="Notes (optional)"
                         value={quickPayment.note}
-                        onChange={(e) => setQuickPayment({ ...quickPayment, note: e.target.value })}
+                        onChange={(e) => setNewPayment({ ...quickPayment, note: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         rows="3"
                     ></textarea>
