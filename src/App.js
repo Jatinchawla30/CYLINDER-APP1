@@ -1489,6 +1489,19 @@ const App = () => {
                                             >
                                                 Generate Reminder
                                             </button>
+                                            <button
+                                                onClick={() => {
+                                                    setConfirmationModalContent({
+                                                        title: 'Delete Customer',
+                                                        message: `Are you sure you want to delete ${customer.name} and all associated cylinders and payments?`,
+                                                        onConfirm: () => handleDeleteCustomer(customer.id)
+                                                    });
+                                                    setShowConfirmationModal(true);
+                                                }}
+                                                className="bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded"
+                                            >
+                                                Delete
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -1516,6 +1529,19 @@ const App = () => {
                                                 className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-2 rounded"
                                             >
                                                 View Cylinders
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setConfirmationModalContent({
+                                                        title: 'Delete Supplier',
+                                                        message: `Are you sure you want to delete ${supplier.name}? This will not affect any cylinders, but they will no longer be linked to this supplier.`,
+                                                        onConfirm: () => handleDeleteSupplier(supplier.id)
+                                                    });
+                                                    setShowConfirmationModal(true);
+                                                }}
+                                                className="bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded"
+                                            >
+                                                Delete
                                             </button>
                                         </div>
                                     </div>
