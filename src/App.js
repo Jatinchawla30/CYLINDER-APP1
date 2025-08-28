@@ -182,7 +182,10 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validate() || isProcessing) return;
+        if (!isProcessing) {
+            if (!validate()) return;
+        }
+
         setIsUploading(true);
         let finalData = { ...newCylinder };
         if (finalData.imageFile) {
@@ -1043,6 +1046,9 @@ const App = () => {
 
     // Firebase Initialization and Auth Listener
     useEffect(() => {
+        let authInstance;
+        let dbInstance;
+
         try {
             // Check for required environment variables
             const requiredVars = [
@@ -1060,8 +1066,8 @@ const App = () => {
             }
 
             const firebaseApp = initializeApp(firebaseConfig);
-            const authInstance = getAuth(firebaseApp);
-            const dbInstance = getFirestore(firebaseApp);
+            authInstance = getAuth(firebaseApp);
+            dbInstance = getFirestore(firebaseApp);
 
             setFirebaseServices({ auth: authInstance, db: dbInstance, isInitialized: true });
 
