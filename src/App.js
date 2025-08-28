@@ -180,7 +180,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         return Object.keys(errors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isProcessing) {
             if (!validate()) return;
@@ -189,21 +189,17 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         setIsUploading(true);
         let finalData = { ...newCylinder };
         if (finalData.imageFile) {
-            uploadImageToCloudinary(finalData.imageFile).then(imageUrl => {
-                if (imageUrl) {
-                    finalData = { ...finalData, imageUrl };
-                }
-                delete finalData.imageFile;
-                if (editingCylinder) {
-                    onUpdateCylinder(editingCylinder.id, finalData);
-                } else {
-                    onAddCylinder(finalData);
-                }
-                setIsUploading(false);
-            }).catch(e => {
-                console.error("Image upload failed:", e);
-                setIsUploading(false);
-            });
+            const imageUrl = await uploadImageToCloudinary(finalData.imageFile);
+            if (imageUrl) {
+                finalData = { ...finalData, imageUrl };
+            }
+            delete finalData.imageFile;
+            if (editingCylinder) {
+                onUpdateCylinder(editingCylinder.id, finalData);
+            } else {
+                onAddCylinder(finalData);
+            }
+            setIsUploading(false);
         } else {
             if (editingCylinder) {
                 onUpdateCylinder(editingCylinder.id, finalData);
@@ -555,7 +551,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
                         id="paymentNotes"
                         placeholder="Notes (optional)"
                         value={quickPayment.note}
-                        onChange={(e) => setNewPayment({ ...quickPayment, note: e.target.value })}
+                        onChange={(e) => setQuickPayment({ ...quickPayment, note: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         rows="3"
                     ></textarea>
@@ -850,8 +846,7 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
                     <Download size={20} className="inline-block mr-2" /> Export to PDF
                 </button>
             </div>
-
-            <div id="customer-cylinders-list-content" className="space-y-4 p-4 border rounded-lg bg-gray-50">
+            <div id="customer-cylinders-list-content" className="p-4 border rounded-lg bg-gray-50">
                 {filteredCylinders.length === 0 ? (
                     <p className="text-center text-gray-500">No matching cylinders found.</p>
                 ) : (
@@ -913,7 +908,6 @@ const SupplierCylinderListModal = ({ selectedSupplier, cylinders, onClose, curre
                     <Download size={20} className="inline-block mr-2" /> Export to PDF
                 </button>
             </div>
-
             <div id="supplier-cylinders-list-content" className="space-y-4 p-4 border rounded-lg bg-gray-50">
                 {filteredCylinders.length === 0 ? (
                     <p className="text-center text-gray-500">No matching cylinders found.</p>
