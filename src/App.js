@@ -165,7 +165,6 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         if (!newCylinder.name) errors.name = 'Cylinder name is required.';
         if (!newCylinder.customerId) errors.customerId = 'Customer selection is required.';
         if (!newCylinder.totalCylinderValue || isNaN(parseFloat(newCylinder.totalCylinderValue))) errors.totalCylinderValue = 'Total value must be a number.';
-
         if (newCylinder.paymentPolicy.type === 'percentage') {
             const percentage = parseFloat(newCylinder.paymentPolicy.value);
             if (isNaN(percentage) || percentage < 0 || percentage > 100) {
@@ -177,7 +176,6 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                 errors.paymentPolicyValue = 'Fixed amount must be a positive number.';
             }
         }
-
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -185,9 +183,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate() || isProcessing) return;
-
         setIsUploading(true);
-
         let finalData = { ...newCylinder };
         if (finalData.imageFile) {
             const imageUrl = await uploadImageToCloudinary(finalData.imageFile);
@@ -198,18 +194,14 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                 return;
             }
         }
-
         delete finalData.imageFile;
-
         if (editingCylinder) {
             onUpdateCylinder(editingCylinder.id, finalData);
         } else {
             onAddCylinder(finalData);
         }
-
         setIsUploading(false);
     };
-
 
     return (
         <ModalContainer title={editingCylinder ? "Edit Cylinder" : "Add New Cylinder"} onClose={onClose}>
@@ -279,6 +271,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
                             onChange={(e) => setNewCylinder({ ...newCylinder, cylinderDate: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                        {validationErrors.cylinderDate && <p className="text-red-500 text-xs mt-1">{validationErrors.cylinderDate}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -694,22 +687,18 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
 
     useEffect(() => {
         if (!db || !selectedCustomer) return;
-
         const fetchLedgerData = async () => {
             setLoadingTransactions(true);
             const allTransactions = [];
             const customerCylinders = cylinders.filter(c => c.customerId === selectedCustomer.id);
-
             let totalCylinderValue = 0;
             let totalAmountPaid = 0;
             let totalOutstanding = 0;
-
             try {
                 const fetchPromises = customerCylinders.map(async (cylinder) => {
                     totalCylinderValue += parseFloat(cylinder.totalCylinderValue || 0);
                     totalAmountPaid += parseFloat(cylinder.amountPaid || 0);
                     totalOutstanding += parseFloat(cylinder.balance || 0);
-
                     allTransactions.push({
                         type: 'Cylinder Creation',
                         cylinderName: cylinder.name,
@@ -717,10 +706,8 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                         date: cylinder.createdAt,
                         id: `cylinder-creation-${cylinder.id}`
                     });
-
                     const paymentsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/cylinders/${cylinder.id}/payments`);
                     const paymentSnapshot = await getDocs(paymentsCollectionRef);
-
                     paymentSnapshot.forEach((doc) => {
                         const newPayment = doc.data();
                         allTransactions.push({
@@ -733,9 +720,7 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                         });
                     });
                 });
-
                 await Promise.all(fetchPromises);
-
                 allTransactions.sort((a, b) => a.date?.seconds - b.date?.seconds);
                 setCustomerTransactions(allTransactions);
                 setSummary({
@@ -750,7 +735,6 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                 setLoadingTransactions(false);
             }
         };
-
         fetchLedgerData();
     }, [db, selectedCustomer, cylinders, appId, userId]);
 
@@ -765,7 +749,6 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                     <Download size={20} className="inline-block mr-2" /> Export to PDF
                 </button>
             </div>
-
             <div id="customer-ledger-content" className="p-4 border rounded-lg bg-gray-50">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center">
@@ -785,7 +768,6 @@ const CustomerLedgerModal = ({ db, appId, userId, selectedCustomer, cylinders, o
                         <span className="text-xl font-bold text-red-600">{currencySymbol}{summary.totalOutstanding}</span>
                     </div>
                 </div>
-
                 <h4 className="text-lg font-bold text-gray-800 mb-2">Transaction History</h4>
                 {loadingTransactions ? (
                     <div className="flex items-center justify-center p-8">
@@ -1025,8 +1007,11 @@ const ErrorModal = ({ message, onClose }) => (
 // Main App component
 const App = () => {
     // State for Firebase instances and auth status
-    const [auth, setAuth] = useState(null);
-    const [db, setDb] = useState(null);
+    const [firebaseServices, setFirebaseServices] = useState({
+        auth: null,
+        db: null,
+        isInitialized: false
+    });
     const [user, setUser] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [error, setError] = useState('');
@@ -1059,16 +1044,27 @@ const App = () => {
     // Firebase Initialization and Auth Listener
     useEffect(() => {
         try {
-            // Initialize Firebase App
+            // Check for required environment variables
+            const requiredVars = [
+                'NEXT_PUBLIC_FIREBASE_API_KEY', 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+                'NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+                'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', 'NEXT_PUBLIC_FIREBASE_APP_ID'
+            ];
+            const missingVars = requiredVars.filter(envVar => !process.env[envVar]);
+            if (missingVars.length > 0) {
+                const errorMessage = `Missing Firebase environment variables: ${missingVars.join(', ')}. Please configure them in your Vercel project settings.`;
+                setError(errorMessage);
+                setShowErrorModal(true);
+                setIsAuthReady(true);
+                return;
+            }
+
             const firebaseApp = initializeApp(firebaseConfig);
-            // Get Firebase services
             const authInstance = getAuth(firebaseApp);
             const dbInstance = getFirestore(firebaseApp);
 
-            setAuth(authInstance);
-            setDb(dbInstance);
+            setFirebaseServices({ auth: authInstance, db: dbInstance, isInitialized: true });
 
-            // Listen for auth state changes
             const unsubscribe = onAuthStateChanged(authInstance, (user) => {
                 setUser(user);
                 setIsAuthReady(true);
@@ -1077,7 +1073,7 @@ const App = () => {
             return () => unsubscribe();
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            setError("Failed to initialize the application. Please check your Firebase configuration and try again.");
+            setError(`Failed to initialize the application. Error: ${e.message}`);
             setShowErrorModal(true);
             setIsAuthReady(true);
         }
@@ -1085,30 +1081,30 @@ const App = () => {
 
     // Fetch customers
     useEffect(() => {
-        if (!user || !db) return;
-        const customersRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`);
+        if (!user || !firebaseServices.db) return;
+        const customersRef = collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`);
         const unsubscribe = onSnapshot(customersRef, (snapshot) => {
             const customerList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setCustomers(customerList);
         });
         return () => unsubscribe();
-    }, [user, db]);
+    }, [user, firebaseServices.db]);
 
     // Fetch suppliers
     useEffect(() => {
-        if (!user || !db) return;
-        const suppliersRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`);
+        if (!user || !firebaseServices.db) return;
+        const suppliersRef = collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`);
         const unsubscribe = onSnapshot(suppliersRef, (snapshot) => {
             const supplierList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setSuppliers(supplierList);
         });
         return () => unsubscribe();
-    }, [user, db]);
+    }, [user, firebaseServices.db]);
 
     // Fetch cylinders
     useEffect(() => {
-        if (!user || !db) return;
-        const cylindersRef = collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`);
+        if (!user || !firebaseServices.db) return;
+        const cylindersRef = collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`);
         const unsubscribe = onSnapshot(cylindersRef, (snapshot) => {
             const cylinderList = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -1118,13 +1114,13 @@ const App = () => {
             setCylinders(cylinderList);
         });
         return () => unsubscribe();
-    }, [user, db]);
+    }, [user, firebaseServices.db]);
 
     const handleLogin = async (email, password) => {
-        if (!auth) return;
+        if (!firebaseServices.auth) return;
         setIsProcessing(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInWithEmailAndPassword(firebaseServices.auth, email, password);
         } catch (error) {
             setError(error.message);
             setShowErrorModal(true);
@@ -1134,10 +1130,10 @@ const App = () => {
     };
 
     const handleRegister = async (email, password) => {
-        if (!auth) return;
+        if (!firebaseServices.auth) return;
         setIsProcessing(true);
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            await createUserWithEmailAndPassword(firebaseServices.auth, email, password);
         } catch (error) {
             setError(error.message);
             setShowErrorModal(true);
@@ -1147,9 +1143,9 @@ const App = () => {
     };
 
     const handleSignOut = async () => {
-        if (!auth) return;
+        if (!firebaseServices.auth) return;
         try {
-            await signOut(auth);
+            await signOut(firebaseServices.auth);
         } catch (error) {
             setError(error.message);
             setShowErrorModal(true);
@@ -1159,7 +1155,7 @@ const App = () => {
     const clearError = () => setError('');
 
     const onAddCylinder = async (cylinderData) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
             let amountFromCustomer;
@@ -1168,7 +1164,7 @@ const App = () => {
             } else {
                 amountFromCustomer = parseFloat(cylinderData.paymentPolicy.value);
             }
-            await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`), {
                 ...cylinderData,
                 amountFromCustomer,
                 amountPaid: 0,
@@ -1184,7 +1180,7 @@ const App = () => {
     };
 
     const onUpdateCylinder = async (cylinderId, cylinderData) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
             let amountFromCustomer;
@@ -1193,7 +1189,7 @@ const App = () => {
             } else {
                 amountFromCustomer = parseFloat(cylinderData.paymentPolicy.value);
             }
-            await updateDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId), {
+            await updateDoc(doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId), {
                 ...cylinderData,
                 amountFromCustomer,
             });
@@ -1208,10 +1204,10 @@ const App = () => {
     };
 
     const onAddCustomer = async (customerData) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`), {
                 ...customerData,
                 createdAt: serverTimestamp(),
             });
@@ -1225,10 +1221,10 @@ const App = () => {
     };
 
     const onAddSupplier = async (supplierData) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`), {
                 ...supplierData,
                 createdAt: serverTimestamp(),
             });
@@ -1242,16 +1238,16 @@ const App = () => {
     };
 
     const onAddPayment = async (cylinderId, amount, note, date) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const cylinderRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId);
+            const cylinderRef = doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId);
             const cylinderDoc = await getDoc(cylinderRef);
             const currentAmountPaid = parseFloat(cylinderDoc.data().amountPaid || 0);
             await updateDoc(cylinderRef, {
                 amountPaid: currentAmountPaid + parseFloat(amount),
             });
-            await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
                 amount,
                 note,
                 date: new Date(date),
@@ -1268,16 +1264,16 @@ const App = () => {
     };
 
     const onClearBalance = async (cylinderId) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const cylinderRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId);
+            const cylinderRef = doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId);
             const cylinderDoc = await getDoc(cylinderRef);
             const amountToPay = parseFloat(cylinderDoc.data().amountFromCustomer) - parseFloat(cylinderDoc.data().amountPaid || 0);
             await updateDoc(cylinderRef, {
                 amountPaid: parseFloat(cylinderDoc.data().amountFromCustomer),
             });
-            await addDoc(collection(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
                 amount: amountToPay.toString(),
                 note: 'Balance cleared',
                 date: new Date(),
@@ -1293,10 +1289,10 @@ const App = () => {
     };
 
     const onDeleteCylinder = async (cylinderId) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/cylinders`, cylinderId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1307,10 +1303,10 @@ const App = () => {
     };
 
     const handleDeleteCustomer = async (customerId) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`, customerId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/customers`, customerId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1321,10 +1317,10 @@ const App = () => {
     };
 
     const handleDeleteSupplier = async (supplierId) => {
-        if (!user || !db) return;
+        if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            await deleteDoc(doc(db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`, supplierId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${firebaseConfig.appId}/users/${user.uid}/suppliers`, supplierId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1398,6 +1394,12 @@ const App = () => {
 
     return (
         <div className="min-h-screen bg-gray-100">
+            {showErrorModal && (
+                <ErrorModal
+                    message={error}
+                    onClose={() => setShowErrorModal(false)}
+                />
+            )}
             {!isAuthReady ? (
                 <LoadingIndicator />
             ) : user ? (
@@ -1641,7 +1643,7 @@ const App = () => {
                     )}
                     {showCustomerLedgerModal && selectedCustomer && (
                         <CustomerLedgerModal
-                            db={db}
+                            db={firebaseServices.db}
                             appId={firebaseConfig.appId}
                             userId={user.uid}
                             selectedCustomer={selectedCustomer}
@@ -1689,12 +1691,6 @@ const App = () => {
                             message={confirmationModalContent.message}
                             onClose={() => setShowConfirmationModal(false)}
                             onConfirm={confirmationModalContent.onConfirm}
-                        />
-                    )}
-                    {showErrorModal && (
-                        <ErrorModal
-                            message={error}
-                            onClose={() => setShowErrorModal(false)}
                         />
                     )}
                 </div>
