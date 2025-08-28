@@ -20,15 +20,15 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS / FIREBASE INIT ---
-const CURRENCY_SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '₹';
+const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
 // Firebase configuration from Environment Variables
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
@@ -37,8 +37,8 @@ const db = getFirestore(firebaseApp);
 // --- HELPER: CLOUDINARY IMAGE UPLOAD ---
 const uploadImageToCloudinary = async (imageFile) => {
     if (!imageFile) return null;
-    const cloudinaryCloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-    const cloudinaryUploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+    const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
     if (!cloudinaryCloudName || !cloudinaryUploadPreset) {
         console.error("Cloudinary environment variables not set.");
         return null;
@@ -1374,7 +1374,9 @@ const App = () => {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {user ? (
+            {!isAuthReady ? (
+                <LoadingIndicator />
+            ) : user ? (
                 <div className="p-4">
                     <div className="flex justify-between items-center mb-4">
                         <h1 className="text-2xl font-bold text-gray-800">Cylinder Tracker Dashboard</h1>
