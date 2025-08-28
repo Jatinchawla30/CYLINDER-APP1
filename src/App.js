@@ -21,17 +21,8 @@ import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS ---
 const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
-// Firebase configuration from Environment Variables
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
 
-// Cloudinary image upload function
+// --- HELPER: CLOUDINARY IMAGE UPLOAD ---
 const uploadImageToCloudinary = async (imageFile) => {
     if (!imageFile) return null;
     const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -180,7 +171,7 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         return Object.keys(errors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         if (!isProcessing) {
             if (!validate()) return;
@@ -189,21 +180,29 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
         setIsUploading(true);
         let finalData = { ...newCylinder };
         if (finalData.imageFile) {
-            const imageUrl = await uploadImageToCloudinary(finalData.imageFile);
-            if (imageUrl) {
-                finalData = { ...finalData, imageUrl };
-            } else {
+            uploadImageToCloudinary(finalData.imageFile).then(imageUrl => {
+                if (imageUrl) {
+                    finalData = { ...finalData, imageUrl };
+                }
+                delete finalData.imageFile;
+                if (editingCylinder) {
+                    onUpdateCylinder(editingCylinder.id, finalData);
+                } else {
+                    onAddCylinder(finalData);
+                }
                 setIsUploading(false);
-                return;
-            }
-        }
-        delete finalData.imageFile;
-        if (editingCylinder) {
-            onUpdateCylinder(editingCylinder.id, finalData);
+            }).catch(e => {
+                console.error("Image upload failed:", e);
+                setIsUploading(false);
+            });
         } else {
-            onAddCylinder(finalData);
+            if (editingCylinder) {
+                onUpdateCylinder(editingCylinder.id, finalData);
+            } else {
+                onAddCylinder(finalData);
+            }
+            setIsUploading(false);
         }
-        setIsUploading(false);
     };
 
     return (
@@ -1009,7 +1008,7 @@ const ErrorModal = ({ message, onClose }) => (
 
 // Main App component
 const App = () => {
-    // State for Firebase instances and auth status
+    // State for Firebase services, auth status, and errors
     const [firebaseServices, setFirebaseServices] = useState({
         auth: null,
         db: null,
@@ -1018,6 +1017,7 @@ const App = () => {
     const [user, setUser] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [error, setError] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
 
     // All other useState hooks
     const [cylinders, setCylinders] = useState([]);
@@ -1035,7 +1035,6 @@ const App = () => {
     const [showGenerateMessageModal, setShowGenerateMessageModal] = useState(false);
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [showErrorModal, setShowErrorModal] = useState(false);
     const [selectedCylinder, setSelectedCylinder] = useState(null);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
@@ -1050,11 +1049,14 @@ const App = () => {
         let dbInstance;
 
         try {
-            // Check for required environment variables
+            // Check for required environment variables before initializing Firebase
             const requiredVars = [
-                'NEXT_PUBLIC_FIREBASE_API_KEY', 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-                'NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
-                'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', 'NEXT_PUBLIC_FIREBASE_APP_ID'
+                'NEXT_PUBLIC_FIREBASE_API_KEY',
+                'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+                'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+                'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+                'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+                'NEXT_PUBLIC_FIREBASE_APP_ID'
             ];
             const missingVars = requiredVars.filter(envVar => !process.env[envVar]);
             if (missingVars.length > 0) {
