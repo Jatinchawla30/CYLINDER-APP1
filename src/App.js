@@ -343,8 +343,8 @@ const CylinderModal = ({ customers, suppliers, onClose, onAddCylinder, onUpdateC
     );
 };
 
-const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalance, currencySymbol, isProcessing }) => {
-    const [newPayment, setNewPayment] = useState({ amount: '', note: '', date: new Date().toISOString().split('T')[0] });
+const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalance, currencySymbol, isProcessing, setNewPayment }) => {
+    const [newPayment, setNewPaymentLocal] = useState({ amount: '', note: '', date: new Date().toISOString().split('T')[0] });
     const [validationErrors, setValidationErrors] = useState({});
 
     const validate = () => {
@@ -372,7 +372,7 @@ const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalan
                         type="number"
                         placeholder="Payment Amount"
                         value={newPayment.amount}
-                        onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
+                        onChange={(e) => setNewPaymentLocal({ ...newPayment, amount: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                     />
@@ -384,7 +384,7 @@ const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalan
                         id="paymentDate"
                         type="date"
                         value={newPayment.date}
-                        onChange={(e) => setNewPayment({ ...newPayment, date: e.target.value })}
+                        onChange={(e) => setNewPaymentLocal({ ...newPayment, date: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -394,7 +394,7 @@ const AddPaymentModal = ({ selectedCylinder, onClose, onAddPayment, onClearBalan
                         id="paymentNotes"
                         placeholder="Notes (optional)"
                         value={newPayment.note}
-                        onChange={(e) => setNewPayment({ ...newPayment, note: e.target.value })}
+                        onChange={(e) => setNewPaymentLocal({ ...newPayment, note: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         rows="3"
                     ></textarea>
@@ -508,7 +508,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
                         id="paymentNotes"
                         placeholder="Notes (optional)"
                         value={quickPayment.note}
-                        onChange={(e) => setNewPayment({ ...quickPayment, note: e.target.value })}
+                        onChange={(e) => setQuickPayment({ ...quickPayment, note: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         rows="3"
                     ></textarea>
