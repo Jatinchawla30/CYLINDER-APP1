@@ -20,7 +20,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS ---
-const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
+const CURRENCY_SYMBOL = '₹';
 // Firebase configuration from Environment Variables
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
