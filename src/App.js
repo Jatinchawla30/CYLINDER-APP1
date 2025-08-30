@@ -20,7 +20,20 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 // --- CONSTANTS ---
-const CURRENCY_SYMBOL = '₹';
+// Currency symbol can be configured in your Vercel project's environment variables.
+const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '₹';
+
+// Firebase configuration from Vercel Environment Variables.
+// These are accessed via process.env because they are set at build time.
+const firebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
 // Cloudinary environment variables. These must be set in your Vercel project's environment variables.
 const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -495,7 +508,7 @@ const QuickPaymentModal = ({ cylinders, customers, getCustomerName, calculateBal
                         id="paymentNotes"
                         placeholder="Notes (optional)"
                         value={quickPayment.note}
-                        onChange={(e) => setQuickPayment({ ...quickPayment, note: e.target.value })}
+                        onChange={(e) => setNewPayment({ ...quickPayment, note: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         rows="3"
                     ></textarea>
@@ -996,13 +1009,18 @@ const App = () => {
         let dbInstance;
 
         try {
-            // Firebase configuration from Canvas environment variables.
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            // Check if the required Firebase config is present
-            if (!firebaseConfig || !firebaseConfig.projectId) {
-                const errorMessage = "Firebase configuration is missing or invalid. Please ensure the project is correctly configured.";
+            // Check for required environment variables before initializing Firebase
+            const requiredVars = [
+                'NEXT_PUBLIC_FIREBASE_API_KEY',
+                'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+                'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+                'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+                'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+                'NEXT_PUBLIC_FIREBASE_APP_ID'
+            ];
+            const missingVars = requiredVars.filter(envVar => !process.env[envVar]);
+            if (missingVars.length > 0) {
+                const errorMessage = `Missing Firebase environment variables: ${missingVars.join(', ')}. Please configure them in your Vercel project settings.`;
                 setError(errorMessage);
                 setShowErrorModal(true);
                 setIsAuthReady(true);
@@ -1016,23 +1034,7 @@ const App = () => {
             setFirebaseServices({ auth: authInstance, db: dbInstance, isInitialized: true });
 
             const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-                if (user) {
-                    setUser(user);
-                } else {
-                    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (initialAuthToken) {
-                        signInWithCustomToken(authInstance, initialAuthToken).then((userCredential) => {
-                            setUser(userCredential.user);
-                        }).catch((error) => {
-                            console.error("Custom token sign-in failed:", error);
-                            setError("Authentication failed. Please check your credentials.");
-                            setShowErrorModal(true);
-                            signInAnonymously(authInstance); // Fallback to anonymous sign-in
-                        });
-                    } else {
-                        signInAnonymously(authInstance);
-                    }
-                }
+                setUser(user);
                 setIsAuthReady(true);
             });
 
@@ -1048,7 +1050,7 @@ const App = () => {
     // Fetch customers
     useEffect(() => {
         if (!user || !firebaseServices.db) return;
-        const customersRef = collection(firebaseServices.db, `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${user.uid}/customers`);
+        const customersRef = collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/customers`);
         const unsubscribe = onSnapshot(customersRef, (snapshot) => {
             const customerList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setCustomers(customerList);
@@ -1059,7 +1061,7 @@ const App = () => {
     // Fetch suppliers
     useEffect(() => {
         if (!user || !firebaseServices.db) return;
-        const suppliersRef = collection(firebaseServices.db, `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${user.uid}/suppliers`);
+        const suppliersRef = collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/suppliers`);
         const unsubscribe = onSnapshot(suppliersRef, (snapshot) => {
             const supplierList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setSuppliers(supplierList);
@@ -1070,7 +1072,7 @@ const App = () => {
     // Fetch cylinders
     useEffect(() => {
         if (!user || !firebaseServices.db) return;
-        const cylindersRef = collection(firebaseServices.db, `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${user.uid}/cylinders`);
+        const cylindersRef = collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`);
         const unsubscribe = onSnapshot(cylindersRef, (snapshot) => {
             const cylinderList = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -1130,8 +1132,7 @@ const App = () => {
             } else {
                 amountFromCustomer = parseFloat(cylinderData.paymentPolicy.value);
             }
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await addDoc(collection(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`), {
                 ...cylinderData,
                 amountFromCustomer,
                 amountPaid: 0,
@@ -1156,8 +1157,7 @@ const App = () => {
             } else {
                 amountFromCustomer = parseFloat(cylinderData.paymentPolicy.value);
             }
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await updateDoc(doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders`, cylinderId), {
+            await updateDoc(doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`, cylinderId), {
                 ...cylinderData,
                 amountFromCustomer,
             });
@@ -1175,8 +1175,7 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await addDoc(collection(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/customers`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/customers`), {
                 ...customerData,
                 createdAt: serverTimestamp(),
             });
@@ -1193,8 +1192,7 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await addDoc(collection(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/suppliers`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/suppliers`), {
                 ...supplierData,
                 createdAt: serverTimestamp(),
             });
@@ -1211,14 +1209,13 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const cylinderRef = doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders`, cylinderId);
+            const cylinderRef = doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`, cylinderId);
             const cylinderDoc = await getDoc(cylinderRef);
             const currentAmountPaid = parseFloat(cylinderDoc.data().amountPaid || 0);
             await updateDoc(cylinderRef, {
                 amountPaid: currentAmountPaid + parseFloat(amount),
             });
-            await addDoc(collection(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
                 amount,
                 note,
                 date: new Date(date),
@@ -1238,14 +1235,13 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const cylinderRef = doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders`, cylinderId);
+            const cylinderRef = doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`, cylinderId);
             const cylinderDoc = await getDoc(cylinderRef);
             const amountToPay = parseFloat(cylinderDoc.data().amountFromCustomer) - parseFloat(cylinderDoc.data().amountPaid || 0);
             await updateDoc(cylinderRef, {
                 amountPaid: parseFloat(cylinderDoc.data().amountFromCustomer),
             });
-            await addDoc(collection(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
+            await addDoc(collection(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders/${cylinderId}/payments`), {
                 amount: amountToPay.toString(),
                 note: 'Balance cleared',
                 date: new Date(),
@@ -1264,8 +1260,7 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await deleteDoc(doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/cylinders`, cylinderId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/cylinders`, cylinderId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1279,8 +1274,7 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await deleteDoc(doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/customers`, customerId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/customers`, customerId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1294,8 +1288,7 @@ const App = () => {
         if (!user || !firebaseServices.db) return;
         setIsProcessing(true);
         try {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            await deleteDoc(doc(firebaseServices.db, `artifacts/${appId}/users/${user.uid}/suppliers`, supplierId));
+            await deleteDoc(doc(firebaseServices.db, `artifacts/${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}/users/${user.uid}/suppliers`, supplierId));
             setShowConfirmationModal(false);
         } catch (error) {
             setError(error.message);
@@ -1619,7 +1612,7 @@ const App = () => {
                     {showCustomerLedgerModal && selectedCustomer && (
                         <CustomerLedgerModal
                             db={firebaseServices.db}
-                            appId={appId}
+                            appId={process.env.NEXT_PUBLIC_FIREBASE_APP_ID}
                             userId={user.uid}
                             selectedCustomer={selectedCustomer}
                             cylinders={cylinders}
