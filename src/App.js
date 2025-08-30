@@ -797,7 +797,7 @@ const CustomerCylinderListModal = ({ selectedCustomer, cylinders, onClose, curre
                     />
                 </div>
                 <button
-                    onClick={() => exportToPdf('customer-cylinders-list-content', `Report_${selectedCustomer.name || 'Customer'}.pdf`)}
+                    onClick={() => exportToPdf('customer-cylinders-list-content', `Cylinders_${selectedCustomer.name || 'Customer'}.pdf`)}
                     className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
                 >
                     <Download size={20} className="inline-block mr-2" /> Export to PDF
