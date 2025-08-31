@@ -1,13 +1,33 @@
 {
   "version": 2,
-  "routes": [
+  "builds": [
     {
-      "src": "/(.*\\.(?:js|css|ico|png|jpg|jpeg|svg|json))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build",
+        "env": {
+          "REACT_APP_FIREBASE_API_KEY": "@REACT_APP_FIREBASE_API_KEY",
+          "REACT_APP_FIREBASE_AUTH_DOMAIN": "@REACT_APP_FIREBASE_AUTH_DOMAIN",
+          "REACT_APP_FIREBASE_PROJECT_ID": "@REACT_APP_FIREBASE_PROJECT_ID",
+          "REACT_APP_FIREBASE_STORAGE_BUCKET": "@REACT_APP_FIREBASE_STORAGE_BUCKET",
+          "REACT_APP_FIREBASE_MESSAGING_SENDER_ID": "@REACT_APP_FIREBASE_MESSAGING_SENDER_ID",
+          "REACT_APP_FIREBASE_APP_ID": "@REACT_APP_FIREBASE_APP_ID",
+          "REACT_APP_CLOUDINARY_CLOUD_NAME": "@REACT_APP_CLOUDINARY_CLOUD_NAME",
+          "REACT_APP_CLOUDINARY_UPLOAD_PRESET": "@REACT_APP_CLOUDINARY_UPLOAD_PRESET"
+        }
+      }
     }
+  ],
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+    { "src": "/manifest.json", "dest": "/manifest.json" },
+    { "src": "/logo192.png", "dest": "/logo192.png" },
+    { "src": "/logo512.png", "dest": "/logo512.png" },
+    { "src": "/robots.txt", "dest": "/robots.txt" },
+    { "src": "/asset-manifest.json", "dest": "/asset-manifest.json" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
