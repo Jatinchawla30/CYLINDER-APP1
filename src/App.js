@@ -1,65 +1,44 @@
-// Import React and required dependencies
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-// Import layout components
-import Sidebar from "./components/layout/Sidebar";
-import Topbar from "./components/layout/Topbar";
-
-// Import feature components
-import Dashboard from "./components/Dashboard";
-import Cylinders from "./components/Cylinders";
-import Customers from "./components/Customers";
-import Suppliers from "./components/Suppliers";
-import Payments from "./components/Payments";
-import Reports from "./components/Reports";
-
-// Import authentication components
+// Import your pages
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
+import Dashboard from "./components/dashboard/Dashboard";
+import Cylinders from "./components/cylinders/Cylinders";
+import Reports from "./components/reports/Reports";
+import Settings from "./components/settings/Settings";
 
-// Main App Component
-export default function App() {
+function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public Authentication Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <div className="min-h-screen bg-gray-100 text-gray-900">
+        {/* ✅ Navbar */}
+        <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
+          <h1 className="font-bold text-lg">Cylinder Tracker</h1>
+          <nav className="space-x-4">
+            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+            <Link to="/cylinders" className="hover:underline">Cylinders</Link>
+            <Link to="/reports" className="hover:underline">Reports</Link>
+            <Link to="/settings" className="hover:underline">Settings</Link>
+            <Link to="/" className="hover:underline">Logout</Link>
+          </nav>
+        </header>
 
-        {/* Protected Application Routes with Layout */}
-        <Route
-          path="/*"
-          element={
-            <div className="flex min-h-screen bg-gray-50">
-              {/* Sidebar Component */}
-              <Sidebar />
-
-              {/* Main Content Area */}
-              <div className="flex-1 flex flex-col">
-                {/* Topbar Component */}
-                <Topbar />
-
-                {/* Page Content */}
-                <main className="p-6">
-                  <Routes>
-                    {/* Default Redirect to Dashboard */}
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
-
-                    {/* Feature Routes */}
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/cylinders" element={<Cylinders />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/suppliers" element={<Suppliers />} />
-                    <Route path="/payments" element={<Payments />} />
-                    <Route path="/reports" element={<Reports />} />
-                  </Routes>
-                </main>
-              </div>
-            </div>
-          }
-        />
-      </Routes>
+        {/* ✅ Page Routes */}
+        <main className="p-6">
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/cylinders" element={<Cylinders />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
 }
+
+export default App;
