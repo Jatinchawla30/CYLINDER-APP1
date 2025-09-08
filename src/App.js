@@ -1,124 +1,80 @@
-// src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-
-// Context
-import { useAuth } from "./context/AuthContext";
-
-// Layout
-import Sidebar from "./components/layout/Sidebar";
-
-// Auth pages
-import Login from "./components/auth/Login";
-import Register from "./components/auth/Register";
-
-// Main pages (inside folders)
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./components/dashboard/Dashboard";
 import Cylinders from "./components/cylinders/Cylinders";
 import Suppliers from "./components/suppliers/Suppliers";
-import Customers from "./components/Customers";
 import Jobs from "./components/jobs/Jobs";
-import Payments from "./components/Payments";
 import Reports from "./components/reports/Reports";
 import Settings from "./components/settings/Settings";
+import Customers from "./components/Customers/costumer"; // lowercase file inside Customers folder
+import Payments from "./components/Payments/payments";  // lowercase file inside Payments folder
+import Orders from "./components/orders/Orders";
 
-// ✅ Protected Route wrapper
-function PrivateRoute({ children }) {
-  const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" />;
-}
+import Sidebar from "./components/layout/Sidebar";
+import Topbar from "./components/layout/Topbar";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   return (
     <Router>
       <div className="flex h-screen bg-gray-100">
-        {/* Sidebar only visible if logged in */}
-        <AuthWrapper>
-          <Sidebar />
-        </AuthWrapper>
+        {/* Sidebar */}
+        <Sidebar />
 
-        <div className="flex-1 p-6 overflow-auto">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          <Topbar />
+          <main className="flex-1 overflow-y-auto p-6">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-            {/* Protected routes */}
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/cylinders"
-              element={
-                <PrivateRoute>
-                  <Cylinders />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/suppliers"
-              element={
-                <PrivateRoute>
-                  <Suppliers />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/customers"
-              element={
-                <PrivateRoute>
-                  <Customers />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/jobs"
-              element={
-                <PrivateRoute>
-                  <Jobs />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/payments"
-              element={
-                <PrivateRoute>
-                  <Payments />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/reports"
-              element={
-                <PrivateRoute>
-                  <Reports />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+              {/* Protected routes */}
+              <Route
+                path="/"
+                element={<ProtectedRoute element={<Dashboard />} />}
+              />
+              <Route
+                path="/cylinders"
+                element={<ProtectedRoute element={<Cylinders />} />}
+              />
+              <Route
+                path="/suppliers"
+                element={<ProtectedRoute element={<Suppliers />} />}
+              />
+              <Route
+                path="/jobs"
+                element={<ProtectedRoute element={<Jobs />} />}
+              />
+              <Route
+                path="/customers"
+                element={<ProtectedRoute element={<Customers />} />}
+              />
+              <Route
+                path="/payments"
+                element={<ProtectedRoute element={<Payments />} />}
+              />
+              <Route
+                path="/orders"
+                element={<ProtectedRoute element={<Orders />} />}
+              />
+              <Route
+                path="/reports"
+                element={<ProtectedRoute element={<Reports />} />}
+              />
+              <Route
+                path="/settings"
+                element={<ProtectedRoute element={<Settings />} />}
+              />
+            </Routes>
+          </main>
         </div>
       </div>
     </Router>
   );
-}
-
-// ✅ Wrapper to conditionally show Sidebar only if logged in
-function AuthWrapper({ children }) {
-  const { currentUser } = useAuth();
-  return currentUser ? children : null;
 }
 
 export default App;
