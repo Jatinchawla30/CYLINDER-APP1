@@ -1,50 +1,73 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-// Layout
 import Sidebar from "./components/layout/Sidebar";
-
-// Auth
+import Dashboard from "./components/dashboard/Dashboard";
+import Cylinders from "./components/Cylinders";
+import Suppliers from "./components/Suppliers";
+import Jobs from "./components/Jobs";
+import Reports from "./components/Reports";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
-
-// Main Pages
-import Dashboard from "./components/dashboard/Dashboard";
-import Cylinders from "./components/cylinders/Cylinders";
-import Suppliers from "./components/suppliers/Suppliers";
-import Jobs from "./components/jobs/Jobs";
-import Reports from "./components/reports/Reports";
-import Settings from "./components/settings/Settings";
-import Customers from "./components/Customers";
-import Payments from "./components/Payments";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <Router>
-      <div className="flex min-h-screen bg-gray-100">
-        {/* Sidebar */}
-        <Sidebar />
+    <AuthProvider>
+      <Router>
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 p-6">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          <Routes>
-            {/* Auth */}
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            {/* Dashboard & Modules */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/cylinders" element={<Cylinders />} />
-            <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/payments" element={<Payments />} />
-          </Routes>
+              {/* Protected Routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cylinders"
+                element={
+                  <ProtectedRoute>
+                    <Cylinders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/suppliers"
+                element={
+                  <ProtectedRoute>
+                    <Suppliers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/jobs"
+                element={
+                  <ProtectedRoute>
+                    <Jobs />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <Reports />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
