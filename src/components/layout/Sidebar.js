@@ -1,4 +1,5 @@
-import { Home, Package, Users, Briefcase, FileText, Settings, UserPlus, CreditCard } from "lucide-react";
+// src/components/layout/Sidebar.js
+import { Home, Package, Users, Briefcase, FileText, UserCog, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Sidebar = () => {
@@ -8,7 +9,7 @@ const Sidebar = () => {
         Cylinder App
       </div>
       <nav className="flex-1 p-4 space-y-3">
-        <Link to="/dashboard" className="flex items-center gap-2 hover:text-yellow-400">
+        <Link to="/" className="flex items-center gap-2 hover:text-yellow-400">
           <Home size={20} /> Dashboard
         </Link>
         <Link to="/cylinders" className="flex items-center gap-2 hover:text-yellow-400">
@@ -17,11 +18,11 @@ const Sidebar = () => {
         <Link to="/suppliers" className="flex items-center gap-2 hover:text-yellow-400">
           <Users size={20} /> Suppliers
         </Link>
+        <Link to="/customers" className="flex items-center gap-2 hover:text-yellow-400">
+          <Users size={20} /> Customers
+        </Link>
         <Link to="/jobs" className="flex items-center gap-2 hover:text-yellow-400">
           <Briefcase size={20} /> Jobs
-        </Link>
-        <Link to="/customers" className="flex items-center gap-2 hover:text-yellow-400">
-          <UserPlus size={20} /> Customers
         </Link>
         <Link to="/payments" className="flex items-center gap-2 hover:text-yellow-400">
           <CreditCard size={20} /> Payments
@@ -30,7 +31,7 @@ const Sidebar = () => {
           <FileText size={20} /> Reports
         </Link>
         <Link to="/settings" className="flex items-center gap-2 hover:text-yellow-400">
-          <Settings size={20} /> Settings
+          <UserCog size={20} /> Settings
         </Link>
       </nav>
     </div>
