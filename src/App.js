@@ -13,7 +13,6 @@ import Dashboard from "./components/dashboard/Dashboard";
 import Cylinders from "./components/cylinders/Cylinders";
 import Suppliers from "./components/suppliers/Suppliers";
 import Jobs from "./components/jobs/Jobs";
-import Orders from "./components/orders/Orders";
 import Reports from "./components/reports/Reports";
 import Settings from "./components/settings/Settings";
 import Customers from "./components/Customers";
@@ -38,7 +37,6 @@ function App() {
             <Route path="/cylinders" element={<Cylinders />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/jobs" element={<Jobs />} />
-            <Route path="/orders" element={<Orders />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/customers" element={<Customers />} />
