@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
@@ -13,47 +13,46 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+      navigate("/"); // redirect to dashboard
     } catch (err) {
-      setError(err.message);
+      setError("Invalid email or password");
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
+            className="w-full p-2 border rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300"
+            required
           />
           <input
             type="password"
             placeholder="Password"
+            className="w-full p-2 border rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300"
+            required
           />
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
             Login
           </button>
         </form>
         <p className="mt-4 text-center text-sm">
           Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/register")}
-            className="text-indigo-600 cursor-pointer"
-          >
+          <a href="/register" className="text-blue-600 hover:underline">
             Register
-          </span>
+          </a>
         </p>
       </div>
     </div>
