@@ -1,4 +1,4 @@
-import { Home, Package, Users, Briefcase, Truck, FileText, UserCircle, CreditCard, Settings } from "lucide-react";
+import { Home, Package, Users, Briefcase, FileText, Settings, UserPlus, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Sidebar = () => {
@@ -20,17 +20,14 @@ const Sidebar = () => {
         <Link to="/jobs" className="flex items-center gap-2 hover:text-yellow-400">
           <Briefcase size={20} /> Jobs
         </Link>
-        <Link to="/orders" className="flex items-center gap-2 hover:text-yellow-400">
-          <Truck size={20} /> Orders
-        </Link>
-        <Link to="/reports" className="flex items-center gap-2 hover:text-yellow-400">
-          <FileText size={20} /> Reports
-        </Link>
         <Link to="/customers" className="flex items-center gap-2 hover:text-yellow-400">
-          <UserCircle size={20} /> Customers
+          <UserPlus size={20} /> Customers
         </Link>
         <Link to="/payments" className="flex items-center gap-2 hover:text-yellow-400">
           <CreditCard size={20} /> Payments
+        </Link>
+        <Link to="/reports" className="flex items-center gap-2 hover:text-yellow-400">
+          <FileText size={20} /> Reports
         </Link>
         <Link to="/settings" className="flex items-center gap-2 hover:text-yellow-400">
           <Settings size={20} /> Settings
