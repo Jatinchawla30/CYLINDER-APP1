@@ -13,8 +13,8 @@ const Register = () => {
     e.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/"); // redirect to dashboard after registration
-    } catch (err) {
+      navigate("/");
+    } catch {
       setError("Error creating account. Try again.");
     }
   };
@@ -48,12 +48,6 @@ const Register = () => {
             Register
           </button>
         </form>
-        <p className="mt-4 text-center text-sm">
-          Already have an account?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
-            Login
-          </a>
-        </p>
       </div>
     </div>
   );
