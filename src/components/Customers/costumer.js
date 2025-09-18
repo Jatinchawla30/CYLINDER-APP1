@@ -1,39 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { db } from "../../firebase";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 
-export default function Customers() {
-  const [customers] = useState([
-    { name: "ABC Foods", contact: "9876543210", balance: 12000 },
-    { name: "XYZ Traders", contact: "9123456780", balance: 0 },
-  ]);
+const Customers = () => {
+  const [customers, setCustomers] = useState([]);
+  const [newCustomer, setNewCustomer] = useState("");
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      const querySnapshot = await getDocs(collection(db, "customers"));
+      setCustomers(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchCustomers();
+  }, []);
+
+  const addCustomer = async () => {
+    if (!newCustomer.trim()) return;
+    await addDoc(collection(db, "customers"), { name: newCustomer });
+    setNewCustomer("");
+    window.location.reload();
+  };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Customers</h1>
-      <div className="bg-white shadow rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100 text-gray-600">
-            <tr>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Contact</th>
-              <th className="px-4 py-2 text-left">Outstanding</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((c, i) => (
-              <tr
-                key={i}
-                className="border-t hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-4 py-2">{c.name}</td>
-                <td className="px-4 py-2">{c.contact}</td>
-                <td className="px-4 py-2 text-red-600 font-semibold">
-                  ₹{c.balance}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="p-6">
+      <h1 className="text-xl font-bold mb-4">Customers</h1>
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          value={newCustomer}
+          onChange={(e) => setNewCustomer(e.target.value)}
+          placeholder="New Customer"
+          className="border p-2 rounded w-full"
+        />
+        <button
+          onClick={addCustomer}
+          className="bg-yellow-600 text-white px-4 py-2 rounded"
+        >
+          Add
+        </button>
       </div>
+      <ul className="list-disc pl-6">
+        {customers.map((c) => (
+          <li key={c.id}>{c.name}</li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
+
+export default Customers;
