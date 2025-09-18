@@ -1,10 +1,12 @@
 import React from "react";
 
-export default function Settings() {
+const Settings = () => {
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold">Settings</h1>
-      <p className="text-gray-600 mt-4">Configure your app settings here.</p>
+      <h1 className="text-xl font-bold mb-4">Settings</h1>
+      <p className="text-gray-700">Settings page for configuring the app.</p>
     </div>
   );
-}
+};
+
+export default Settings;
