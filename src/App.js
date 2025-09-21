@@ -1,79 +1,99 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sidebar from "./components/layout/Sidebar";
 import Dashboard from "./components/dashboard/Dashboard";
 import Cylinders from "./components/cylinders/Cylinders";
 import Suppliers from "./components/suppliers/Suppliers";
 import Jobs from "./components/jobs/Jobs";
 import Reports from "./components/reports/Reports";
+import Customers from "./components/customers/Customers";
+import Payments from "./components/payments/Payments";
 import Settings from "./components/settings/Settings";
-import Customers from "./components/Customers/costumer"; // lowercase file inside Customers folder
-import Payments from "./components/Payments/payments";  // lowercase file inside Payments folder
-import Orders from "./components/orders/Orders";
-
-import Sidebar from "./components/layout/Sidebar";
-import Topbar from "./components/layout/Topbar";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <Router>
-      <div className="flex h-screen bg-gray-100">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          <Topbar />
-          <main className="flex-1 overflow-y-auto p-6">
+    <AuthProvider>
+      <Router>
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1">
             <Routes>
-              {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Protected routes */}
               <Route
                 path="/"
-                element={<ProtectedRoute element={<Dashboard />} />}
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/cylinders"
-                element={<ProtectedRoute element={<Cylinders />} />}
+                element={
+                  <ProtectedRoute>
+                    <Cylinders />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/suppliers"
-                element={<ProtectedRoute element={<Suppliers />} />}
+                element={
+                  <ProtectedRoute>
+                    <Suppliers />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/jobs"
-                element={<ProtectedRoute element={<Jobs />} />}
-              />
-              <Route
-                path="/customers"
-                element={<ProtectedRoute element={<Customers />} />}
-              />
-              <Route
-                path="/payments"
-                element={<ProtectedRoute element={<Payments />} />}
-              />
-              <Route
-                path="/orders"
-                element={<ProtectedRoute element={<Orders />} />}
+                element={
+                  <ProtectedRoute>
+                    <Jobs />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/reports"
-                element={<ProtectedRoute element={<Reports />} />}
+                element={
+                  <ProtectedRoute>
+                    <Reports />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/customers"
+                element={
+                  <ProtectedRoute>
+                    <Customers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payments"
+                element={
+                  <ProtectedRoute>
+                    <Payments />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/settings"
-                element={<ProtectedRoute element={<Settings />} />}
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
               />
             </Routes>
-          </main>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
