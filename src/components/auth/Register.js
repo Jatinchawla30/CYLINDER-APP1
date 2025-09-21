@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
@@ -13,17 +13,17 @@ const Register = () => {
     e.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/");
-    } catch {
-      setError("Error creating account. Try again.");
+      navigate("/"); // redirect to dashboard after register
+    } catch (err) {
+      setError("Failed to create account. Try again.");
     }
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="email"
@@ -48,6 +48,15 @@ const Register = () => {
             Register
           </button>
         </form>
+        <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            className="text-blue-600 cursor-pointer"
+          >
+            Login
+          </span>
+        </p>
       </div>
     </div>
   );
