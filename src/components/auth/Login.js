@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
@@ -13,17 +13,17 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/"); // Redirect after login
-    } catch {
+      navigate("/"); // redirect to dashboard after login
+    } catch (err) {
       setError("Invalid email or password");
     }
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
@@ -48,6 +48,15 @@ const Login = () => {
             Login
           </button>
         </form>
+        <p className="text-sm text-center mt-4">
+          Don’t have an account?{" "}
+          <span
+            onClick={() => navigate("/register")}
+            className="text-blue-600 cursor-pointer"
+          >
+            Register
+          </span>
+        </p>
       </div>
     </div>
   );
